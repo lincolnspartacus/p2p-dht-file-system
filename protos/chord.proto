@@ -1,5 +1,13 @@
 syntax = "proto3";
 
 service ChordService {
-    
+    rpc findSuccessor(FindSuccessorRequest) returns (FindSuccessorResponse) {}
+}
+
+message FindSuccessorRequest {
+    int32 id = 1;
+}
+
+message FindSuccessorResponse {
+    string addr = 1;
 }
