@@ -9,5 +9,7 @@ message FindSuccessorRequest {
 }
 
 message FindSuccessorResponse {
-    string addr = 1;
+    int32 id = 1;
+    string ip = 2;
+    bool is_final = 3;
 }

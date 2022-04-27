@@ -44,8 +44,9 @@ class Node():
     def serve(self):
         ip = '[::]:50051'
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        node = Node(ring_bits = 128)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
-            ChordServicer(), server)
+            ChordServicer(node), server)
         server.add_insecure_port(ip)
         server.start()
 

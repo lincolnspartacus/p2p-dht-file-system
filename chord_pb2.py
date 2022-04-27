@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x63hord.proto\"\"\n\x14\x46indSuccessorRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"%\n\x15\x46indSuccessorResponse\x12\x0c\n\x04\x61\x64\x64r\x18\x01 \x01(\t2P\n\x0c\x43hordService\x12@\n\rfindSuccessor\x12\x15.FindSuccessorRequest\x1a\x16.FindSuccessorResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x63hord.proto\"\"\n\x14\x46indSuccessorRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"A\n\x15\x46indSuccessorResponse\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02ip\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x32P\n\x0c\x43hordService\x12@\n\rfindSuccessor\x12\x15.FindSuccessorRequest\x1a\x16.FindSuccessorResponse\"\x00\x62\x06proto3')
 
 
 
@@ -41,7 +41,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _FINDSUCCESSORREQUEST._serialized_start=15
   _FINDSUCCESSORREQUEST._serialized_end=49
   _FINDSUCCESSORRESPONSE._serialized_start=51
-  _FINDSUCCESSORRESPONSE._serialized_end=88
-  _CHORDSERVICE._serialized_start=90
-  _CHORDSERVICE._serialized_end=170
+  _FINDSUCCESSORRESPONSE._serialized_end=116
+  _CHORDSERVICE._serialized_start=118
+  _CHORDSERVICE._serialized_end=198
 # @@protoc_insertion_point(module_scope)
