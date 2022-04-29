@@ -2,6 +2,10 @@ import chord
 import socket
 import hashlib
 import utils
+import grpc
+import chord_pb2_grpc
+import chord_pb2
+from concurrent import futures
 
 class Node():
     def __init__(self, ring_bits):
@@ -14,6 +18,13 @@ class Node():
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
         self.ftable = None
+
+    #Set successor and predecssor of a node
+    def set_predecessor(self, id, ip_addr):
+        self.predecessor = (id, ip_addr)
+
+    def set_successor(self, id, ip_addr):
+        self.successor = (id, ip_addr)
     
     '''
     Given a key k, find the node responsible for k
@@ -46,7 +57,7 @@ class Node():
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         node = Node(ring_bits = 128)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
-            ChordServicer(node), server)
+            chord.ChordServicer(node), server)
         server.add_insecure_port(ip)
         server.start()
 
@@ -72,6 +83,8 @@ def test_closestPrecedingNode():
 def main():
     node = Node(ring_bits = 128)
     node.printIP()
+    node.serve()
 
 if __name__ == "__main__":
     main()
+    

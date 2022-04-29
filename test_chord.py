@@ -9,7 +9,7 @@ def main():
 
     request = chord_pb2.FindSuccessorRequest(id = 5235)
     response = stub.findSuccessor(request)
-    print(f"Response address = {response.addr}")
+    print(f"Response address = {response.ip}")
 
 if __name__ == "__main__":
     main()
