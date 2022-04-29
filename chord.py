@@ -28,7 +28,10 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             return response
 
         response.id, response.ip = self.node.closestPrecedingNode(target_key)
-        response.is_final = False
+        if response.id == self.node.id:
+            response.is_final = True
+        else:
+            response.is_final = False
         print("[chord] response id ",response.id)
         print("[chord] response addr ",response.ip)
         print("[chord] response is_final ",response.is_final)
