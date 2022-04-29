@@ -9,7 +9,7 @@ from concurrent import futures
 
 class Node():
     def __init__(self, ring_bits):
-        self.ip = socket.gethostbyname(socket.gethostname()) # IP Address of node as str
+        self.ip = socket.gethostbyname(socket.gethostname()) + ':50051' # IP Address of node as str
         self.ip_bytes = self.ip.encode('utf-8') # IP Address of node as bytes
         self.ring_bits = ring_bits # No. of bits in identifier circle
         self.id = int(hashlib.sha1(self.ip_bytes).hexdigest(), 16) % (2**ring_bits) # ID of node
