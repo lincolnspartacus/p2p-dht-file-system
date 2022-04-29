@@ -82,6 +82,8 @@ class Node():
             is_final = response.is_final
 
         self.set_successor(response.id, response.ip)
+        # TODO: Add ourself to the Bootstrapper's table only after keys are transferred + pointers are set
+        self.addToBootstrapper()
 
     #Set successor and predecssor of a node
     def set_predecessor(self, id, ip_addr):
