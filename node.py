@@ -18,7 +18,7 @@ class Node():
         self.predecessor = None # Predecessor in (ID, IP addr) format
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
-        self.ftable = None
+        self.ftable = [None] * ring_bits
 
         # Bootstrapper info
         self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
@@ -49,6 +49,13 @@ class Node():
         print(f'[chord] contactBootstrapper returned ({response.id}, {response.ip})')
         return (response.id, response.ip)
 
+    def addToBootstrapper(self):
+        print('[chord] Adding self to Bootstrapper..')
+        channel = grpc.insecure_channel(self.bootstrapper_ip)
+        stub = chord_pb2_grpc.BootstrapServiceStub(channel)
+        request = chord_pb2.NodeInfo(id = self.id, ip = self.ip)
+        stub.addNode(request)
+
     '''
     Join the existing chord ring OR become the first node
     '''
@@ -58,7 +65,8 @@ class Node():
         if n_dash.id == -1:
             self.predecessor = None
             self.successor = (self.id, self.ip)
-            # TODO: Add ourself to the Bootstrapper's table
+            # TODO: Add ourself to the Bootstrapper's table only after keys are transferred + pointers are set
+            self.addToBootstrapper()
             return
 
         # successor = n'.find successor(n)
@@ -80,6 +88,7 @@ class Node():
 
     def set_successor(self, id, ip_addr):
         self.successor = (id, ip_addr)
+        self.ftable[0] = self.successor
     
     '''
     Given a key k, find the node responsible for k
