@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service ChordService {
     rpc findSuccessor(FindSuccessorRequest) returns (FindSuccessorResponse) {}
+    rpc debug(Empty) returns (DebugInfo) {}
 }
 
 service BootstrapService {
@@ -23,6 +24,13 @@ message FindSuccessorResponse {
     int32 id = 1;
     string ip = 2;
     bool is_final = 3;
+}
+
+message DebugInfo {
+    NodeInfo predecessor = 1;
+    NodeInfo successor = 2;
+    NodeInfo self_node = 3;
+    repeated NodeInfo ftable = 4;
 }
 
 message Empty {}

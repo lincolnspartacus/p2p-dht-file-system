@@ -34,3 +34,17 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         print("[chord] response is_final ",response.is_final)
 
         return response
+
+    '''
+    Debug RPC interface
+    '''
+    def debug(self, request, context):
+        print('[chord] Inside debug')
+        pred = chord_pb2.NodeInfo(id = self.node.predecessor[0], ip = self.node.predecessor[1])
+        succ = chord_pb2.NodeInfo(id = self.node.successor[0], ip = self.node.successor[1])
+        self_node = chord_pb2.NodeInfo(id = self.node.id, ip = self.node.ip)
+
+        ftable_nodeinfo = [chord_pb2.NodeInfo(id = x[0], ip = x[1]) for x in self.node.ftable]
+        response = chord_pb2.DebugInfo(predecessor = pred, successor = succ, self_node = self_node)
+        response.ftable.extend(ftable_nodeinfo)
+        return response

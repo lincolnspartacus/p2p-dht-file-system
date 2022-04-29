@@ -14,11 +14,11 @@ class Node():
         self.ring_bits = ring_bits # No. of bits in identifier circle
         self.id = int(hashlib.sha1(self.ip_bytes).hexdigest(), 16) % (2**ring_bits) # ID of node
 
-        self.successor = None # Successor (list?) in (ID, IP addr) format
-        self.predecessor = None # Predecessor in (ID, IP addr) format
+        self.successor = (-1, 'null') # Successor (list?) in (ID, IP addr) format
+        self.predecessor = (-1, 'null') # Predecessor in (ID, IP addr) format
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
-        self.ftable = [None] * ring_bits
+        self.ftable = [(-1, 'null')] * ring_bits
 
         # Bootstrapper info
         self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
@@ -115,7 +115,7 @@ class Node():
 
         for i in range(self.ring_bits - 1, -1, -1):
             ith_finger = self.ftable[i]
-            if ith_finger is None:
+            if ith_finger[0] == -1:
                 continue
 
             ith_finger_distance = utils.circular_distance(self.id, ith_finger[0], self.ring_bits)
@@ -125,11 +125,10 @@ class Node():
         return (self.id, self.ip)
 
     def serve(self):
-        ip = '[::]:50051'
+        ip = 'localhost:50051'
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        node = Node(ring_bits = 128)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
-            chord.ChordServicer(node), server)
+            chord.ChordServicer(self), server)
         server.add_insecure_port(ip)
         server.start()
 
@@ -153,10 +152,10 @@ def test_closestPrecedingNode():
         print(f'Key = {i}, Closest Preceding = {node.closestPrecedingNode(i)}')
 
 def main():
-    node = Node(ring_bits = 128)
+    node = Node(ring_bits = 16)
     node.printIP()
     #node.contactBootstrapper()
-    #node.serve()
+    node.serve()
 
 if __name__ == "__main__":
     main()
