@@ -4,6 +4,17 @@ service ChordService {
     rpc findSuccessor(FindSuccessorRequest) returns (FindSuccessorResponse) {}
 }
 
+service BootstrapService {
+    rpc getNode(Empty) returns (NodeInfo) {}
+    rpc addNode(NodeInfo) returns (Empty) {}
+    rpc clearTable(Empty) returns (Empty) {}
+}
+
+message NodeInfo {
+    int32 id = 1;
+    string ip = 2;
+}
+
 message FindSuccessorRequest {
     int32 id = 1;
 }
@@ -13,3 +24,5 @@ message FindSuccessorResponse {
     string ip = 2;
     bool is_final = 3;
 }
+
+message Empty {}

@@ -14,12 +14,21 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x63hord.proto\"\"\n\x14\x46indSuccessorRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"A\n\x15\x46indSuccessorResponse\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02ip\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\x32P\n\x0c\x43hordService\x12@\n\rfindSuccessor\x12\x15.FindSuccessorRequest\x1a\x16.FindSuccessorResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x63hord.proto\"\"\n\x08NodeInfo\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02ip\x18\x02 \x01(\t\"\"\n\x14\x46indSuccessorRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"A\n\x15\x46indSuccessorResponse\x12\n\n\x02id\x18\x01 \x01(\x05\x12\n\n\x02ip\x18\x02 \x01(\t\x12\x10\n\x08is_final\x18\x03 \x01(\x08\"\x07\n\x05\x45mpty2P\n\x0c\x43hordService\x12@\n\rfindSuccessor\x12\x15.FindSuccessorRequest\x1a\x16.FindSuccessorResponse\"\x00\x32r\n\x10\x42ootstrapService\x12\x1e\n\x07getNode\x12\x06.Empty\x1a\t.NodeInfo\"\x00\x12\x1e\n\x07\x61\x64\x64Node\x12\t.NodeInfo\x1a\x06.Empty\"\x00\x12\x1e\n\nclearTable\x12\x06.Empty\x1a\x06.Empty\"\x00\x62\x06proto3')
 
 
 
+_NODEINFO = DESCRIPTOR.message_types_by_name['NodeInfo']
 _FINDSUCCESSORREQUEST = DESCRIPTOR.message_types_by_name['FindSuccessorRequest']
 _FINDSUCCESSORRESPONSE = DESCRIPTOR.message_types_by_name['FindSuccessorResponse']
+_EMPTY = DESCRIPTOR.message_types_by_name['Empty']
+NodeInfo = _reflection.GeneratedProtocolMessageType('NodeInfo', (_message.Message,), {
+  'DESCRIPTOR' : _NODEINFO,
+  '__module__' : 'chord_pb2'
+  # @@protoc_insertion_point(class_scope:NodeInfo)
+  })
+_sym_db.RegisterMessage(NodeInfo)
+
 FindSuccessorRequest = _reflection.GeneratedProtocolMessageType('FindSuccessorRequest', (_message.Message,), {
   'DESCRIPTOR' : _FINDSUCCESSORREQUEST,
   '__module__' : 'chord_pb2'
@@ -34,14 +43,28 @@ FindSuccessorResponse = _reflection.GeneratedProtocolMessageType('FindSuccessorR
   })
 _sym_db.RegisterMessage(FindSuccessorResponse)
 
+Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
+  'DESCRIPTOR' : _EMPTY,
+  '__module__' : 'chord_pb2'
+  # @@protoc_insertion_point(class_scope:Empty)
+  })
+_sym_db.RegisterMessage(Empty)
+
 _CHORDSERVICE = DESCRIPTOR.services_by_name['ChordService']
+_BOOTSTRAPSERVICE = DESCRIPTOR.services_by_name['BootstrapService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _FINDSUCCESSORREQUEST._serialized_start=15
-  _FINDSUCCESSORREQUEST._serialized_end=49
-  _FINDSUCCESSORRESPONSE._serialized_start=51
-  _FINDSUCCESSORRESPONSE._serialized_end=116
-  _CHORDSERVICE._serialized_start=118
-  _CHORDSERVICE._serialized_end=198
+  _NODEINFO._serialized_start=15
+  _NODEINFO._serialized_end=49
+  _FINDSUCCESSORREQUEST._serialized_start=51
+  _FINDSUCCESSORREQUEST._serialized_end=85
+  _FINDSUCCESSORRESPONSE._serialized_start=87
+  _FINDSUCCESSORRESPONSE._serialized_end=152
+  _EMPTY._serialized_start=154
+  _EMPTY._serialized_end=161
+  _CHORDSERVICE._serialized_start=163
+  _CHORDSERVICE._serialized_end=243
+  _BOOTSTRAPSERVICE._serialized_start=245
+  _BOOTSTRAPSERVICE._serialized_end=359
 # @@protoc_insertion_point(module_scope)
