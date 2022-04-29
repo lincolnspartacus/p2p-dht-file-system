@@ -19,6 +19,11 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.FindSuccessorRequest.SerializeToString,
                 response_deserializer=chord__pb2.FindSuccessorResponse.FromString,
                 )
+        self.findSuccessorsPred = channel.unary_unary(
+                '/ChordService/findSuccessorsPred',
+                request_serializer=chord__pb2.Empty.SerializeToString,
+                response_deserializer=chord__pb2.FindSuccessorsPredResponse.FromString,
+                )
         self.debug = channel.unary_unary(
                 '/ChordService/debug',
                 request_serializer=chord__pb2.Empty.SerializeToString,
@@ -30,6 +35,12 @@ class ChordServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def findSuccessor(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def findSuccessorsPred(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -48,6 +59,11 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     servicer.findSuccessor,
                     request_deserializer=chord__pb2.FindSuccessorRequest.FromString,
                     response_serializer=chord__pb2.FindSuccessorResponse.SerializeToString,
+            ),
+            'findSuccessorsPred': grpc.unary_unary_rpc_method_handler(
+                    servicer.findSuccessorsPred,
+                    request_deserializer=chord__pb2.Empty.FromString,
+                    response_serializer=chord__pb2.FindSuccessorsPredResponse.SerializeToString,
             ),
             'debug': grpc.unary_unary_rpc_method_handler(
                     servicer.debug,
@@ -78,6 +94,23 @@ class ChordService(object):
         return grpc.experimental.unary_unary(request, target, '/ChordService/findSuccessor',
             chord__pb2.FindSuccessorRequest.SerializeToString,
             chord__pb2.FindSuccessorResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def findSuccessorsPred(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChordService/findSuccessorsPred',
+            chord__pb2.Empty.SerializeToString,
+            chord__pb2.FindSuccessorsPredResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

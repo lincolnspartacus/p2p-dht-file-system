@@ -39,6 +39,16 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         return response
 
     '''
+    Finding successor's predecessor info
+    '''
+    def findSuccessorsPred(self, request, context):
+        response = chord_pb2.FindSuccessorsPredResponse()
+        response.ip = self.node.predecessor[1]
+        response.id = self.node.predecessor[0]
+        
+        return response
+
+    '''
     Debug RPC interface
     '''
     def debug(self, request, context):

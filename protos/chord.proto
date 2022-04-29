@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service ChordService {
     rpc findSuccessor(FindSuccessorRequest) returns (FindSuccessorResponse) {}
+    rpc findSuccessorsPred(Empty) returns (FindSuccessorsPredResponse) {}
     rpc debug(Empty) returns (DebugInfo) {}
 }
 
@@ -24,6 +25,11 @@ message FindSuccessorResponse {
     int32 id = 1;
     string ip = 2;
     bool is_final = 3;
+}
+
+message FindSuccessorsPredResponse {
+    int32 id = 1;
+    string ip = 2;
 }
 
 message DebugInfo {

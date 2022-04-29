@@ -127,6 +127,15 @@ class Node():
         
         return (self.id, self.ip)
 
+    def get_successors_predecessor(self):
+        if self.predecessor.id == -1:
+            return (-1,"null")
+        channel = grpc.insecure_channel(self.predecessor.ip)
+        stub = chord_pb2_grpc.ChordServiceStub(channel)
+        request = chord_pb2.Empty()
+        response = stub.findSuccessorsPred(request)
+        return (response.id,response.ip)
+
     def serve(self):
         ip = '0.0.0.0:50051'
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
