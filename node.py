@@ -9,15 +9,70 @@ from concurrent import futures
 
 class Node():
     def __init__(self, ring_bits):
-        self.ip = socket.gethostbyname(socket.gethostname()).encode('utf-8') # IP Address of node as bytes
+        self.ip = socket.gethostbyname(socket.gethostname()) # IP Address of node as str
+        self.ip_bytes = self.ip.encode('utf-8') # IP Address of node as bytes
         self.ring_bits = ring_bits # No. of bits in identifier circle
-        self.id = int(hashlib.sha1(self.ip).hexdigest(), 16) % (2**ring_bits) # ID of node
+        self.id = int(hashlib.sha1(self.ip_bytes).hexdigest(), 16) % (2**ring_bits) # ID of node
 
         self.successor = None # Successor (list?) in (ID, IP addr) format
         self.predecessor = None # Predecessor in (ID, IP addr) format
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
         self.ftable = None
+
+        # Bootstrapper info
+        self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
+
+    '''
+    Clears the bootstrapper's node table
+    ONLY FOR DEBUGGING!!!!!!!!!
+    '''
+    def clearBootstrapper(self):
+        channel = grpc.insecure_channel(self.bootstrapper_ip)
+        stub = chord_pb2_grpc.BootstrapServiceStub(channel)
+        request = chord_pb2.Empty()
+
+        response = stub.clearTable(request)
+
+        print('[chord] clearBootstrapper')
+
+    '''
+    Contact the bootstrapper server and get the (ID, IP) of an existing
+    node in the Chord ring
+    '''
+    def contactBootstrapper(self):
+        channel = grpc.insecure_channel(self.bootstrapper_ip)
+        stub = chord_pb2_grpc.BootstrapServiceStub(channel)
+        request = chord_pb2.Empty()
+
+        response = stub.getNode(request)
+        print(f'[chord] contactBootstrapper returned ({response.id}, {response.ip})')
+        return (response.id, response.ip)
+
+    '''
+    Join the existing chord ring OR become the first node
+    '''
+    def join(self):
+        n_dash = self.contactBootstrapper() # Find existing node in ring
+
+        if n_dash.id == -1:
+            self.predecessor = None
+            self.successor = (self.id, self.ip)
+            # TODO: Add ourself to the Bootstrapper's table
+            return
+
+        # successor = n'.find successor(n)
+        target_ip = n_dash[1]
+        is_final = False
+        while not is_final:
+            channel = grpc.insecure_channel(target_ip)
+            stub = chord_pb2_grpc.ChordServiceStub(channel)
+            request = chord_pb2.FindSuccessorRequest(id = self.id)
+            response = stub.findSuccessor(request)
+            target_ip = response.ip
+            is_final = response.is_final
+
+        self.set_successor(response.id, response.ip)
 
     #Set successor and predecssor of a node
     def set_predecessor(self, id, ip_addr):
@@ -28,8 +83,16 @@ class Node():
     
     '''
     Given a key k, find the node responsible for k
+    Working diagram -
+    <node> <---------> Node A
+    <node> <---------> Node B ... (no RPC chaining)
     '''
-    def findSuccessor(k):
+    def findSuccessor(self, k):
+        # channel = grpc.insecure_channel(n_dash[1])
+        # stub = chord_pb2_grpc.ChordServiceStub(channel)
+        # request = chord_pb2.FindSuccessorRequest(id = self.id)
+        # response = stub.findSuccessor(request)
+
         if k > self.id and k <= self.successor[0]:
             return self.successor
         
@@ -83,7 +146,8 @@ def test_closestPrecedingNode():
 def main():
     node = Node(ring_bits = 128)
     node.printIP()
-    node.serve()
+    #node.contactBootstrapper()
+    #node.serve()
 
 if __name__ == "__main__":
     main()

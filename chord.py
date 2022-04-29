@@ -21,7 +21,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         successor_distance = utils.circular_distance(self.node.id, self.node.successor[0], self.node.ring_bits)
         if target_distance <= successor_distance:
             response.ip = self.node.successor[1]
-            response.id = str(self.node.successor[0])
+            response.id = self.node.successor[0]
             response.is_final = True
             print("[chord] findSuccessor response")
 
