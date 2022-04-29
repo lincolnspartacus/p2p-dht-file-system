@@ -61,9 +61,10 @@ class Node():
     '''
     def join(self):
         n_dash = self.contactBootstrapper() # Find existing node in ring
+        # TODO : What if the returned n' is actually this node itself?? BOOM!
 
-        if n_dash.id == -1:
-            self.predecessor = None
+        if n_dash[0] == -1:
+            self.predecessor = (-1, 'null')
             self.successor = (self.id, self.ip)
             # TODO: Add ourself to the Bootstrapper's table only after keys are transferred + pointers are set
             self.addToBootstrapper()
@@ -125,7 +126,7 @@ class Node():
         return (self.id, self.ip)
 
     def serve(self):
-        ip = 'localhost:50051'
+        ip = '0.0.0.0:50051'
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
             chord.ChordServicer(self), server)
@@ -155,6 +156,7 @@ def main():
     node = Node(ring_bits = 16)
     node.printIP()
     #node.contactBootstrapper()
+    node.join()
     node.serve()
 
 if __name__ == "__main__":
