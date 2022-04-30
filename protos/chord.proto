@@ -4,6 +4,9 @@ service ChordService {
     rpc findSuccessor(FindSuccessorRequest) returns (FindSuccessorResponse) {}
     rpc findSuccessorsPred(Empty) returns (FindSuccessorsPredResponse) {}
     rpc debug(Empty) returns (DebugInfo) {}
+
+    rpc notify_at_join(NotifyRequest) returns (NotifyResponse) {}
+	rpc notify_at_leave(NotifyRequest) returns (NotifyResponse) {}
 }
 
 service BootstrapService {
@@ -40,3 +43,20 @@ message DebugInfo {
 }
 
 message Empty {}
+
+message NotifyRequest {
+    int32 predecessorId = 1;
+    string addr = 2;
+}
+
+message Pair {
+    string key = 1;
+    int32 len = 2;
+    int32 seq_num = 3;
+    repeated string addrs = 4;
+}
+
+message NotifyResponse {
+    int32 result = 1;
+    repeated Pair pairs = 2;
+}

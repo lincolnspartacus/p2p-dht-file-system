@@ -92,7 +92,69 @@ class Node():
     def set_successor(self, id, ip_addr):
         self.successor = (id, ip_addr)
         self.ftable[0] = self.successor
+
+    def delete_successor(self):
+        # delete the successor from finger table and fill in with the most recent successor after that
+        print('*****NOW DELETE SUCCESSOR*****')
+        if self.successor == -1:
+            return -1
+
+        next_suc = None
+        suc_id = self.successor[0]
+        # find the closest successor
+        for i in range(0, self.ring_bits):
+            suc_info = self.ftable[i] #(id, ip)
+            if suc_info[0] != -1 and suc_info[0] != suc_id:
+                next_suc = suc_info
+                break
+
+        # for loop needed because Finger table can be and we need update only "N14" entries
+        # N8 + 1 -> N14 
+        # N8 + 2 -> N14 
+        # N8 + 4 -> N14 
+        # N8 + 8 -> N21
+        for i in range(0, self.ring_bits):
+            # ftable structure: [(id, ip), (id, ip)]
+            if self.ftable[i][0] == suc_id:
+                # replace this successor with next possible successor, otherwise to set it to be (-1, null)
+                if next_suc is not None:
+                    self.ftable[i] = next_suc
+                else:
+                    self.ftable[i] = (-1, 'null')
+            else:
+                break
+
+        self.set_successor(self.ftable[0][0], self.ftable[0][1])
+        print('[delete_successor] - {} finger table is {}'.format(self.id, self.ftable))
+        return 0
     
+    def notify_successor(self, type):
+        # used to contact successor and notify the existence of current node
+        if self.successor is None:
+            return
+
+        print('[notify_successor] successorId:{}  |  succesorAddr:{}'.format(self.successor[0], self.successor[1]))
+
+        channel = grpc.insecure_channel(self.successor[1])
+        stub = chord_pb2_grpc.ChordServiceStub(channel)
+        notify_req = chord_pb2.NotifyRequest(predecessorId=self.id, addr=self.ip)
+        try:
+            if type == 'join':
+                notify_res = stub.notify_at_join(notify_req, timeout=20)
+                self.addToBootstrapper()
+            elif type == 'leave':
+                notify_res = stub.notify_at_leave(notify_req, timeout=20)
+        except Exception as e:
+            print(str(e))
+            print("[notify_successor] Node#{} rpc error when notify to {}".format(self.id, self.successor[0]))
+
+    def update_kth_finger_table_entry(self, k, successor_id, successor_addr):
+        # print('*****NOW UPDATE FINGER ENTRY*****')
+        self.ftable[k] = (successor_id, successor_addr)
+        if k == 0:
+           self.set_successor(successor_id, successor_addr)
+        # print('node {} updated finger table is: {}'.format(self.id, str(self.finger_table)))
+
     '''
     Given a key k, find the node responsible for k
     Working diagram -
@@ -128,9 +190,9 @@ class Node():
         return (self.id, self.ip)
 
     def get_successors_predecessor(self):
-        if self.predecessor.id == -1:
+        if self.successor[0] == -1:
             return (-1,"null")
-        channel = grpc.insecure_channel(self.predecessor.ip)
+        channel = grpc.insecure_channel(self.successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         request = chord_pb2.Empty()
         response = stub.findSuccessorsPred(request)

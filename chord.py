@@ -48,6 +48,18 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         
         return response
 
+    def notify_at_leave(self, request, context):
+        print("[notify_at_leave] node {} received notify to set predecessor to {}".format(self.id, request.predecessorId))
+        # TODO: Transfer of keys on leave. refer 
+        self.predecessor = (request.predecessorId, request.addr)
+        return chord_pb2.NotifyResponse(result=0)
+    
+    def notify_at_join(self, request, context):
+        print("[notify_at_join] node {} received notify to set predecessor to {}".format(self.id, request.predecessorId))
+        self.predecessor = (request.predecessorId, request.addr)
+        # TODO: Transfer of keys on join. refer 
+        return chord_pb2.NotifyResponse(result=0)
+       
     '''
     Debug RPC interface
     '''
