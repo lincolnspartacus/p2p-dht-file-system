@@ -18,6 +18,7 @@ class Stabilize(Thread):
             #Ping successor to see his predecessor if it's matching with current node
             try:
                 succ_pred_id, succ_pred_ip = self.node.get_successors_predecessor()
+                print('[stabilize] {}: Predecessor {} Successor {}'.format(self.node.id, self.node.predecessor[0], self.node.successor[0]))
                 print('[stabilize] {}: get_successors_predecessor() returned {} at {}'.format(self.node.id, succ_pred_id, succ_pred_ip))
             except:
                 succ_pred_id = None
