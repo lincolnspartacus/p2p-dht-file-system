@@ -196,7 +196,11 @@ class Node():
     def get_successors_predecessor(self):
         if self.successor[0] == -1:
             return (-1,"null")
-        if self.successor[0] == self.id:
+        if self.successor[0] == self.id and self.predecessor[0] == -1:
+            return (self.id, self.ip)
+        if self.successor[0] == self.id and self.predecessor[0] != -1:
+            print("Updating successor")
+            self.set_successor(self.predecessor[0],self.predecessor[1])
             return (self.id, self.ip)
         channel = grpc.insecure_channel(self.successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
