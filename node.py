@@ -196,6 +196,8 @@ class Node():
     def get_successors_predecessor(self):
         if self.successor[0] == -1:
             return (-1,"null")
+        if self.successor[0] == self.id:
+            return (self.id, self.ip)
         channel = grpc.insecure_channel(self.successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         request = chord_pb2.Empty()

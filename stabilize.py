@@ -22,7 +22,11 @@ class Stabilize(Thread):
             except:
                 succ_pred_id = None
 
-            if succ_pred_id == None:
+
+            if succ_pred_id == self.node.id:
+                pass
+            elif succ_pred_id == None:
+                print('[stabilize] leave')
                 #Successor doesn't exist/dead
                 #delete current successor -> point to next available closest node
                 self.node.delete_successor()
@@ -32,6 +36,7 @@ class Stabilize(Thread):
                 # IN reference, there was self loop from successor to itself in predecessor link
                 # successor does not have a predecessor yet, notify it
                 # TODO: notify successor - join 
+                print('[stabilize] join')
                 self.node.notify_successor(type='join')
             else:
                 # Update self successor as predecessor of current succesor

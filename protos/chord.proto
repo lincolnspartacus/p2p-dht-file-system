@@ -58,5 +58,4 @@ message Pair {
 
 message NotifyResponse {
     int32 result = 1;
-    repeated Pair pairs = 2;
 }
