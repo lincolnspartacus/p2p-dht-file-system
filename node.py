@@ -5,6 +5,7 @@ import utils
 import grpc
 import chord_pb2_grpc
 import chord_pb2
+from stabilize import Stabilize
 from concurrent import futures
 
 class Node():
@@ -19,6 +20,9 @@ class Node():
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
         self.ftable = [(-1, 'null')] * ring_bits
+
+        #Utility threads
+        self.stabilize = Stabilize(self)
 
         # Bootstrapper info
         self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
@@ -230,6 +234,7 @@ def main():
     node.printIP()
     #node.contactBootstrapper()
     node.join()
+    node.stabilize.start()
     node.serve()
 
 if __name__ == "__main__":
