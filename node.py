@@ -3,6 +3,7 @@ import socket
 import hashlib
 import utils
 import grpc
+import sys
 import chord_pb2_grpc
 import chord_pb2
 from stabilize import Stabilize
@@ -10,7 +11,7 @@ from concurrent import futures
 
 class Node():
     def __init__(self, ring_bits):
-        self.ip = socket.gethostbyname(socket.gethostname()) + ':50051' # IP Address of node as str
+        self.ip = socket.gethostbyname(socket.gethostname()) + ':' + sys.argv[1] # ':50051' # IP Address of node as str
         self.ip_bytes = self.ip.encode('utf-8') # IP Address of node as bytes
         self.ring_bits = ring_bits # No. of bits in identifier circle
         self.id = int(hashlib.sha1(self.ip_bytes).hexdigest(), 16) % (2**ring_bits) # ID of node
@@ -25,7 +26,9 @@ class Node():
         self.stabilize = Stabilize(self)
 
         # Bootstrapper info
-        self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
+        #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
+        self.bootstrapper_ip = 'localhost:40051'
+
 
     '''
     Clears the bootstrapper's node table
@@ -232,6 +235,7 @@ def test_closestPrecedingNode():
         print(f'Key = {i}, Closest Preceding = {node.closestPrecedingNode(i)}')
 
 def main():
+    print("port number: " + sys.argv[1]);
     node = Node(ring_bits = 16)
     node.printIP()
     #node.contactBootstrapper()

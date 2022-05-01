@@ -45,7 +45,7 @@ class BootstrapServicer(chord_pb2_grpc.BootstrapServiceServicer):
         return response
 
 def main():
-    ip = '[::]:50051'
+    ip = 'localhost:40051'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     chord_pb2_grpc.add_BootstrapServiceServicer_to_server(BootstrapServicer(), server)
     server.add_insecure_port(ip)
