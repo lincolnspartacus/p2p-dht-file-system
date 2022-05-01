@@ -84,3 +84,15 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         response = chord_pb2.DebugInfo(predecessor = pred, successor = succ, self_node = self_node)
         response.ftable.extend(ftable_nodeinfo)
         return response
+
+    def getSuccessorList(self, request, context):
+        print("[chord] Get successor list",self.node.successor_list)
+        #succlist_nodeinfo = []
+        #for i, x in enumerate(self.node.successor_list):
+        #    entry = chord_pb2.NodeInfo(x[0],x[1])
+        #    succlist_nodeinfo.append(entry)
+        #deep_succlist = deepcopy(self.successor_list)
+        succlist_nodeinfo = [chord_pb2.NodeInfo(id = x[0], ip = x[1]) for x in self.node.successor_list]
+        #print(succlist_nodeinfo)
+        response = chord_pb2.getSuccessorListResponse(succList = succlist_nodeinfo)
+        return response

@@ -7,6 +7,7 @@ service ChordService {
 
     rpc notify(NotifyRequest) returns (NotifyResponse) {}
     rpc checkPredecessor(Empty) returns (Empty) {}
+    rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
 }
 
 service BootstrapService {
@@ -40,6 +41,10 @@ message DebugInfo {
     NodeInfo successor = 2;
     NodeInfo self_node = 3;
     repeated NodeInfo ftable = 4;
+}
+
+message getSuccessorListResponse{
+    repeated NodeInfo succList = 1;
 }
 
 message Empty {}

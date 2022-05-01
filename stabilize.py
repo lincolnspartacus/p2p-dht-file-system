@@ -11,9 +11,9 @@ class Stabilize(Thread):
 
     def run(self):
         while True:
-            low = 1
-            high = 5
-            sleep_time = random.randint(2, 5)
+            low = 3
+            high = 6
+            sleep_time = random.randint(low, high)
             time.sleep(sleep_time)
 
             #Ping successor to see his predecessor if it's matching with current node
@@ -39,3 +39,4 @@ class Stabilize(Thread):
             # successor.notify(self.id)
             self.node.notify_successor()
             self.node.check_predecessor()
+            self.node.sync_successor_list()

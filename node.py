@@ -19,6 +19,8 @@ class Node():
 
         self.successor = (-1, 'null') # Successor (list?) in (ID, IP addr) format
         self.predecessor = (-1, 'null') # Predecessor in (ID, IP addr) format
+        self.successor_list_len = 4 #Max successor list length
+        self.successor_list = [(-1,'null')] * self.successor_list_len
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
         self.ftable = [(-1, 'null')] * ring_bits
@@ -100,6 +102,7 @@ class Node():
     def set_successor(self, id, ip_addr):
         self.successor = (id, ip_addr)
         self.ftable[0] = self.successor
+        self.successor_list[0] = self.successor
 
     def delete_successor(self):
         # delete the successor from finger table and fill in with the most recent successor after that
@@ -172,6 +175,42 @@ class Node():
            self.set_successor(successor_id, successor_addr)
         # print('node {} updated finger table is: {}'.format(self.id, str(self.finger_table)))
 
+    def sync_successor_list(self):
+        print('[sync_successor_list] ',self.successor_list)
+        if self.id == self.successor[0] or self.successor[0] == -1:
+            return
+        #Contact successor and update your own successor list
+        #Eventually all entries will be filled
+        #Good idea: Why not return Successor list when successor_predecessor rpc is called
+        channel = grpc.insecure_channel(self.successor[1])
+        stub = chord_pb2_grpc.ChordServiceStub(channel)
+        request = chord_pb2.Empty()
+        try:
+            response = stub.getSuccessorList(request, timeout=10)
+            print("[sync_successor_list] response received")
+            for i, node_info in enumerate(response.succList):
+                pass
+                #print('SuccessorList[{0}] = ({1}, {2})'.format(str(i), node_info.id, node_info.ip))
+            j=1
+            for i, node_info in enumerate(response.succList):
+            #No need to duplicate entries and add same successors, current node to our succ list
+                if j < self.successor_list_len and self.successor[0] != node_info.id and self.id != node_info.id:
+                    self.successor_list[j] = (node_info.id,node_info.ip)
+                j=j+1
+        except Exception as e:
+            print(str(e))
+            #Successor not alive
+            #Remove successor from successor list and take subsequent successor
+            print("[sync_successor_list] RPC failed")
+            next_successor = self.successor_list.pop(0)
+            self.successor_list.append((-1,'null'))
+            if next_successor[0] == -1:
+                #No successors available, so can set ourselves to be succ
+                self.set_successor(self.id,self.ip)
+            else:
+                self.set_successor(next_successor[0],next_successor[1])
+
+        pass
     '''
     Given a key k, find the node responsible for k
     Working diagram -

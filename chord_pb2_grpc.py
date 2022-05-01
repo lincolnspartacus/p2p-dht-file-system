@@ -39,6 +39,11 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.Empty.SerializeToString,
                 response_deserializer=chord__pb2.Empty.FromString,
                 )
+        self.getSuccessorList = channel.unary_unary(
+                '/ChordService/getSuccessorList',
+                request_serializer=chord__pb2.Empty.SerializeToString,
+                response_deserializer=chord__pb2.getSuccessorListResponse.FromString,
+                )
 
 
 class ChordServiceServicer(object):
@@ -74,6 +79,12 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getSuccessorList(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChordServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -101,6 +112,11 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     servicer.checkPredecessor,
                     request_deserializer=chord__pb2.Empty.FromString,
                     response_serializer=chord__pb2.Empty.SerializeToString,
+            ),
+            'getSuccessorList': grpc.unary_unary_rpc_method_handler(
+                    servicer.getSuccessorList,
+                    request_deserializer=chord__pb2.Empty.FromString,
+                    response_serializer=chord__pb2.getSuccessorListResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -194,6 +210,23 @@ class ChordService(object):
         return grpc.experimental.unary_unary(request, target, '/ChordService/checkPredecessor',
             chord__pb2.Empty.SerializeToString,
             chord__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getSuccessorList(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChordService/getSuccessorList',
+            chord__pb2.Empty.SerializeToString,
+            chord__pb2.getSuccessorListResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
