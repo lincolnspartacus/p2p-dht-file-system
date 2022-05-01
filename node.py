@@ -100,6 +100,7 @@ class Node():
         self.predecessor = (id, ip_addr)
 
     def set_successor(self, id, ip_addr):
+        print("****SET SUCCESSOR***",id)
         self.successor = (id, ip_addr)
         self.ftable[0] = self.successor
         self.successor_list[0] = self.successor
@@ -202,7 +203,8 @@ class Node():
             #Successor not alive
             #Remove successor from successor list and take subsequent successor
             print("[sync_successor_list] RPC failed")
-            next_successor = self.successor_list.pop(0)
+            next_successor = self.successor_list.pop(1)
+            print("Next successor ",next_successor)
             self.successor_list.append((-1,'null'))
             if next_successor[0] == -1:
                 #No successors available, so can set ourselves to be succ
