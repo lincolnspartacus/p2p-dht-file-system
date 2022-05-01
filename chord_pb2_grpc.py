@@ -29,13 +29,8 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.Empty.SerializeToString,
                 response_deserializer=chord__pb2.DebugInfo.FromString,
                 )
-        self.notify_at_join = channel.unary_unary(
-                '/ChordService/notify_at_join',
-                request_serializer=chord__pb2.NotifyRequest.SerializeToString,
-                response_deserializer=chord__pb2.NotifyResponse.FromString,
-                )
-        self.notify_at_leave = channel.unary_unary(
-                '/ChordService/notify_at_leave',
+        self.notify = channel.unary_unary(
+                '/ChordService/notify',
                 request_serializer=chord__pb2.NotifyRequest.SerializeToString,
                 response_deserializer=chord__pb2.NotifyResponse.FromString,
                 )
@@ -62,13 +57,7 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def notify_at_join(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def notify_at_leave(self, request, context):
+    def notify(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -92,13 +81,8 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     request_deserializer=chord__pb2.Empty.FromString,
                     response_serializer=chord__pb2.DebugInfo.SerializeToString,
             ),
-            'notify_at_join': grpc.unary_unary_rpc_method_handler(
-                    servicer.notify_at_join,
-                    request_deserializer=chord__pb2.NotifyRequest.FromString,
-                    response_serializer=chord__pb2.NotifyResponse.SerializeToString,
-            ),
-            'notify_at_leave': grpc.unary_unary_rpc_method_handler(
-                    servicer.notify_at_leave,
+            'notify': grpc.unary_unary_rpc_method_handler(
+                    servicer.notify,
                     request_deserializer=chord__pb2.NotifyRequest.FromString,
                     response_serializer=chord__pb2.NotifyResponse.SerializeToString,
             ),
@@ -164,7 +148,7 @@ class ChordService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def notify_at_join(request,
+    def notify(request,
             target,
             options=(),
             channel_credentials=None,
@@ -174,24 +158,7 @@ class ChordService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChordService/notify_at_join',
-            chord__pb2.NotifyRequest.SerializeToString,
-            chord__pb2.NotifyResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def notify_at_leave(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChordService/notify_at_leave',
+        return grpc.experimental.unary_unary(request, target, '/ChordService/notify',
             chord__pb2.NotifyRequest.SerializeToString,
             chord__pb2.NotifyResponse.FromString,
             options, channel_credentials,

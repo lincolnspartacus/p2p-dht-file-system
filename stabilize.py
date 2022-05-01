@@ -1,6 +1,7 @@
 from threading import Thread
 import random
 import time
+import utils
 
 class Stabilize(Thread):
 
@@ -17,33 +18,23 @@ class Stabilize(Thread):
 
             #Ping successor to see his predecessor if it's matching with current node
             try:
-                succ_pred_id, succ_pred_ip = self.node.get_successors_predecessor()
+                x_id, x_ip = self.node.get_successors_predecessor()
                 print('[stabilize] {}: Predecessor {} Successor {}'.format(self.node.id, self.node.predecessor[0], self.node.successor[0]))
-                print('[stabilize] {}: get_successors_predecessor() returned {} at {}'.format(self.node.id, succ_pred_id, succ_pred_ip))
+                print('[stabilize] {}: get_successors_predecessor() returned {} at {}'.format(self.node.id, x_id, x_ip))
             except:
-                succ_pred_id = None
+                x_id = None
 
+            if x_id is None:
+                print('[stabilize] Sucessor has crashed!')
+                continue
 
-            if succ_pred_id == self.node.id:
-                pass
-            elif succ_pred_id == None:
-                print('[stabilize] leave')
-                #Successor doesn't exist/dead
-                #delete current successor -> point to next available closest node
-                self.node.delete_successor()
-                # TODO: notify successor - leave 
-                self.node.notify_successor(type='leave')
-            elif succ_pred_id == -1: #self.node.successor[0]:
-                # IN reference, there was self loop from successor to itself in predecessor link
-                # successor does not have a predecessor yet, notify it
-                # TODO: notify successor - join 
-                print('[stabilize] join')
-                self.node.notify_successor(type='join')
-            else:
-                # Update self successor as predecessor of current succesor
-                # predeccesor of (predecessor of current succesor) will be updated in next iteration
-                if succ_pred_id == self.node.id:
-                    self.node.update_kth_finger_table_entry(0, succ_pred_id, succ_pred_ip)
-                    print('[stabilize] {}: successor has been changed to {}'.format(self.node.id, self.node.successor))
-                else: 
-                    print('[stabilize] {}: skipping finger table update {}'.format(self.node.id, self.node.successor))
+            if x_id != -1:
+                n_x_distance = utils.circular_distance(self.node.id, x_id, self.node.ring_bits)
+                n_succ_distance = utils.circular_distance(self.node.id, self.node.successor[0], self.node.ring_bits)
+
+                # If x lies in (n, succ)
+                if n_x_distance < n_succ_distance and n_x_distance != 0:
+                    self.node.set_successor(id = x_id, ip = x_ip)
+
+            # successor.notify(self.id)
+            self.notify_successor()

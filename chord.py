@@ -47,16 +47,23 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         response.id = self.node.predecessor[0]
         
         return response
-
-    def notify_at_leave(self, request, context):
-        print("[notify_at_leave] node {} received notify to set predecessor to {}".format(self.node.id, request.predecessorId))
-        # TODO: Transfer of keys on leave. refer 
-        self.node.predecessor = (request.predecessorId, request.addr)
-        return chord_pb2.NotifyResponse(result=0)
     
-    def notify_at_join(self, request, context):
+    def notify(self, request, context):
         print("[notify_at_join] node {} received notify to set predecessor to {}".format(self.node.id, request.predecessorId))
-        self.node.predecessor = (request.predecessorId, request.addr)
+        if self.node.predecessor[0] == -1:
+            self.node.set_predecessor(request.predecessorId, request.addr)
+        else:
+            x_id, x_ip = request.predecessorId, request.addr # x is n'
+            pred_x_distance = utils.circular_distance(self.node.predecessor[0], x_id, self.node.ring_bits)
+            pred_n_distance = utils.circular_distance(self.node.predecessor[0], self.node.id, self.node.ring_bits)
+
+            # If n' belongs to (pred, n) then set n.pred = n'
+            if pred_x_distance < pred_n_distance and pred_x_distance != 0:
+                self.node.set_predecessor(x_id, x_ip)
+                # Set n.succ = n' to break self loop (happens when 2nd node joins chord)
+                if self.node.sucessor[0] == self.node.id:
+                    self.node.set_successor(x_id, x_ip)
+
         # TODO: Transfer of keys on join. refer 
         return chord_pb2.NotifyResponse(result=0)
        

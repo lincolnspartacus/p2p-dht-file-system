@@ -132,9 +132,9 @@ class Node():
         print('[delete_successor] - {} finger table is {}'.format(self.id, self.ftable))
         return 0
     
-    def notify_successor(self, type):
-        # used to contact successor and notify the existence of current node
-        if self.successor is None:
+    # used to contact successor and notify the existence of current node
+    def notify_successor(self):
+        if self.successor[0] == -1:
             return
 
         print('[notify_successor] successorId:{}  |  succesorAddr:{}'.format(self.successor[0], self.successor[1]))
@@ -143,11 +143,7 @@ class Node():
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         notify_req = chord_pb2.NotifyRequest(predecessorId=self.id, addr=self.ip)
         try:
-            if type == 'join':
-                notify_res = stub.notify_at_join(notify_req, timeout=20)
-                self.addToBootstrapper()
-            elif type == 'leave':
-                notify_res = stub.notify_at_leave(notify_req, timeout=20)
+                stub.notify(notify_req, timeout=20)
         except Exception as e:
             print(str(e))
             print("[notify_successor] Node#{} rpc error when notify to {}".format(self.id, self.successor[0]))

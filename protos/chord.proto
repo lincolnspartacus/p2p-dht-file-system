@@ -5,8 +5,7 @@ service ChordService {
     rpc findSuccessorsPred(Empty) returns (FindSuccessorsPredResponse) {}
     rpc debug(Empty) returns (DebugInfo) {}
 
-    rpc notify_at_join(NotifyRequest) returns (NotifyResponse) {}
-	rpc notify_at_leave(NotifyRequest) returns (NotifyResponse) {}
+    rpc notify(NotifyRequest) returns (NotifyResponse) {}
 }
 
 service BootstrapService {
