@@ -66,7 +66,11 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
         # TODO: Transfer of keys on join. refer 
         return chord_pb2.NotifyResponse(result=0)
-       
+
+    def checkPredecessor(self, request, context):
+        print("[checkPredecessor] node {} received request".format(self.node.id))
+        response = chord_pb2.Empty()
+        return response
     '''
     Debug RPC interface
     '''

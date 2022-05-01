@@ -38,3 +38,4 @@ class Stabilize(Thread):
 
             # successor.notify(self.id)
             self.node.notify_successor()
+            self.node.check_predecessor()

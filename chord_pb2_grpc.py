@@ -34,6 +34,11 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.NotifyRequest.SerializeToString,
                 response_deserializer=chord__pb2.NotifyResponse.FromString,
                 )
+        self.checkPredecessor = channel.unary_unary(
+                '/ChordService/checkPredecessor',
+                request_serializer=chord__pb2.Empty.SerializeToString,
+                response_deserializer=chord__pb2.Empty.FromString,
+                )
 
 
 class ChordServiceServicer(object):
@@ -63,6 +68,12 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def checkPredecessor(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChordServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -85,6 +96,11 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     servicer.notify,
                     request_deserializer=chord__pb2.NotifyRequest.FromString,
                     response_serializer=chord__pb2.NotifyResponse.SerializeToString,
+            ),
+            'checkPredecessor': grpc.unary_unary_rpc_method_handler(
+                    servicer.checkPredecessor,
+                    request_deserializer=chord__pb2.Empty.FromString,
+                    response_serializer=chord__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -161,6 +177,23 @@ class ChordService(object):
         return grpc.experimental.unary_unary(request, target, '/ChordService/notify',
             chord__pb2.NotifyRequest.SerializeToString,
             chord__pb2.NotifyResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def checkPredecessor(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChordService/checkPredecessor',
+            chord__pb2.Empty.SerializeToString,
+            chord__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

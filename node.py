@@ -152,6 +152,19 @@ class Node():
             print(str(e))
             print("[notify_successor] Node#{} rpc error when notify to {}".format(self.id, self.successor[0]))
 
+    #Check if predecessor is alive else set it to null
+    def check_predecessor(self):
+        if self.predecessor[0] == -1:
+            return
+        channel = grpc.insecure_channel(self.predecessor[1])
+        stub = chord_pb2_grpc.ChordServiceStub(channel)
+        check_predecessor_request = chord_pb2.Empty()
+        try:
+            stub.checkPredecessor(check_predecessor_request, timeout=20)
+        except:
+            print("[check_predecessor] Node#{} rpc error when to {}".format(self.id, self.predecessor[0]))
+            self.predecessor = (-1, "null")
+
     def update_kth_finger_table_entry(self, k, successor_id, successor_addr):
         # print('*****NOW UPDATE FINGER ENTRY*****')
         self.ftable[k] = (successor_id, successor_addr)

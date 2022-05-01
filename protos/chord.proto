@@ -6,6 +6,7 @@ service ChordService {
     rpc debug(Empty) returns (DebugInfo) {}
 
     rpc notify(NotifyRequest) returns (NotifyResponse) {}
+    rpc checkPredecessor(Empty) returns (Empty) {}
 }
 
 service BootstrapService {
