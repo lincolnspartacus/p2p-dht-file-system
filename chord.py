@@ -61,7 +61,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             if pred_x_distance < pred_n_distance and pred_x_distance != 0:
                 self.node.set_predecessor(x_id, x_ip)
                 # Set n.succ = n' to break self loop (happens when 2nd node joins chord)
-                if self.node.sucessor[0] == self.node.id:
+                if self.node.successor[0] == self.node.id:
                     self.node.set_successor(x_id, x_ip)
 
         # TODO: Transfer of keys on join. refer 

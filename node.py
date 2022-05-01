@@ -11,7 +11,8 @@ from concurrent import futures
 
 class Node():
     def __init__(self, ring_bits):
-        self.ip = socket.gethostbyname(socket.gethostname()) + ':' + sys.argv[1] # ':50051' # IP Address of node as str
+        #self.ip = socket.gethostbyname(socket.gethostname()) + ':' + sys.argv[1] # ':50051' # IP Address of node as str
+        self.ip = '0.0.0.0:' + sys.argv[1]
         self.ip_bytes = self.ip.encode('utf-8') # IP Address of node as bytes
         self.ring_bits = ring_bits # No. of bits in identifier circle
         self.id = int(hashlib.sha1(self.ip_bytes).hexdigest(), 16) % (2**ring_bits) # ID of node
@@ -137,7 +138,7 @@ class Node():
     
     # used to contact successor and notify the existence of current node
     def notify_successor(self):
-        if self.successor[0] == -1:
+        if self.successor[0] == -1 or self.successor[0] == self.id:
             return
 
         print('[notify_successor] successorId:{}  |  succesorAddr:{}'.format(self.successor[0], self.successor[1]))
@@ -208,7 +209,7 @@ class Node():
         return (response.id,response.ip)
 
     def serve(self):
-        ip = '0.0.0.0:50051'
+        ip = '0.0.0.0:' + sys.argv[1]
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
             chord.ChordServicer(self), server)

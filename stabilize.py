@@ -34,7 +34,7 @@ class Stabilize(Thread):
 
                 # If x lies in (n, succ)
                 if n_x_distance < n_succ_distance and n_x_distance != 0:
-                    self.node.set_successor(id = x_id, ip = x_ip)
+                    self.node.set_successor(x_id, x_ip)
 
             # successor.notify(self.id)
-            self.notify_successor()
+            self.node.notify_successor()
