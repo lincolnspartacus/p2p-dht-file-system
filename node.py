@@ -100,7 +100,7 @@ class Node():
         self.predecessor = (id, ip_addr)
 
     def get_predecessor(self):
-        return (self.predecessor.id, self.predecessor.ip)
+        return (self.predecessor[0], self.predecessor[1])
 
     def get_successor(self):
         return (self.successor[0], self.successor[1])
