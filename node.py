@@ -246,7 +246,7 @@ class Node():
             #Remove successor from successor list and take subsequent successor
             new_list = self.get_successor_list()
             new_list.pop(0)
-            new_list.append((-1, 'null')) # TODO: Should this be self.id?
+            new_list.append((self.id, self.ip)) # Add ourself as a successor at the end. NOTE : Don't put -1 here
             self.set_successor_list(new_list)
 
     '''
