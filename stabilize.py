@@ -15,7 +15,7 @@ class Stabilize(Thread):
             high = 6
             sleep_time = random.randint(low, high)
             time.sleep(sleep_time)
-            #self.node.sync_successor_list()
+            self.node.sync_successor_list()
             #Ping successor to see his predecessor if it's matching with current node
             try:
                 x_id, x_ip = self.node.get_successors_predecessor()
