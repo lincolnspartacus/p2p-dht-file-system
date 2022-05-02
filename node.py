@@ -1,5 +1,6 @@
 import chord
 import socket
+import threading
 import hashlib
 import utils
 import grpc
@@ -27,6 +28,10 @@ class Node():
 
         #Utility threads
         self.stabilize = Stabilize(self)
+
+        # Locks
+        self.successor_lock = threading.Lock()
+        self.predecessor_lock = threading.Lock()
 
         # Bootstrapper info
         #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
@@ -97,27 +102,45 @@ class Node():
 
     #Set successor and predecssor of a node
     def set_predecessor(self, id, ip_addr):
+        self.predecessor_lock.acquire()
         self.predecessor = (id, ip_addr)
+        self.predecessor_lock.release()
 
     def get_predecessor(self):
-        return (self.predecessor[0], self.predecessor[1])
+        self.predecessor_lock.acquire()
+        ret = (self.predecessor[0], self.predecessor[1])
+        self.predecessor_lock.release()
+        return ret
 
     def get_successor(self):
-        return (self.successor[0], self.successor[1])
+        self.successor_lock.acquire()
+        ret = (self.successor[0], self.successor[1])
+        self.successor_lock.release()
+        return ret
 
     def set_successor(self, id, ip_addr):
+        self.successor_lock.acquire()
+
         print("****SET SUCCESSOR***",id)
         self.successor = (id, ip_addr)
         self.ftable[0] = self.successor
         self.successor_list[0] = self.successor
 
+        self.successor_lock.release()
+
     def set_successor_list(self, new_list):
+        self.successor_lock.acquire()
+
         self.successor_list = new_list
         self.ftable[0] = new_list[0]
         self.successor = new_list[0]
 
+        self.successor_lock.release()
+
     def get_successor_list(self):
+        self.successor_lock.acquire()
         ret = self.successor_list.copy()
+        self.successor_lock.release()
         return ret
 
     def delete_successor(self):
@@ -218,17 +241,9 @@ class Node():
         except Exception as e:
             print(str(e))
             #Successor not alive
-            #Remove successor from successor list and take subsequent successor
             print("[sync_successor_list] RPC failed")
-            # next_successor = self.successor_list.pop(1)
-            # print("Next successor ",next_successor)
-            # self.successor_list.append((-1,'null'))
-            # if next_successor[0] == -1:
-            #     #No successors available, so can set ourselves to be succ
-            #     self.set_successor(self.id,self.ip)
-            # else:
-            #     self.set_successor(next_successor[0],next_successor[1])
 
+            #Remove successor from successor list and take subsequent successor
             new_list = self.get_successor_list()
             new_list.pop(0)
             new_list.append((-1, 'null')) # TODO: Should this be self.id?
