@@ -16,12 +16,13 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         # TODO: Handle case when this node is responsible for the request i.e. target_distance = 0
         print("[chord] findSuccessor id ",request.id)
 
+        successor = self.node.get_successor()
         target_key = request.id
         target_distance = utils.circular_distance(self.node.id, target_key, self.node.ring_bits)
-        successor_distance = utils.circular_distance(self.node.id, self.node.successor[0], self.node.ring_bits)
+        successor_distance = utils.circular_distance(self.node.id, successor[0], self.node.ring_bits)
         if target_distance <= successor_distance:
-            response.ip = self.node.successor[1]
-            response.id = self.node.successor[0]
+            response.ip = successor[1]
+            response.id = successor[0]
             response.is_final = True
             print("[chord] findSuccessor response")
 
@@ -43,25 +44,29 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
     '''
     def findSuccessorsPred(self, request, context):
         response = chord_pb2.FindSuccessorsPredResponse()
-        response.ip = self.node.predecessor[1]
-        response.id = self.node.predecessor[0]
+        predecessor = self.node.get_predecessor()
+        response.ip = predecessor[1]
+        response.id = predecessor[0]
         
         return response
     
     def notify(self, request, context):
         print("[notify_at_join] node {} received notify to set predecessor to {}".format(self.node.id, request.predecessorId))
-        if self.node.predecessor[0] == -1:
+        successor = self.node.get_successor()
+        predecessor = self.node.get_predecessor()
+
+        if predecessor[0] == -1:
             self.node.set_predecessor(request.predecessorId, request.addr)
         else:
             x_id, x_ip = request.predecessorId, request.addr # x is n'
-            pred_x_distance = utils.circular_distance(self.node.predecessor[0], x_id, self.node.ring_bits)
-            pred_n_distance = utils.circular_distance(self.node.predecessor[0], self.node.id, self.node.ring_bits)
+            pred_x_distance = utils.circular_distance(predecessor[0], x_id, self.node.ring_bits)
+            pred_n_distance = utils.circular_distance(predecessor[0], self.node.id, self.node.ring_bits)
 
             # If n' belongs to (pred, n) then set n.pred = n'
             if pred_x_distance < pred_n_distance and pred_x_distance != 0:
                 self.node.set_predecessor(x_id, x_ip)
                 # Set n.succ = n' to break self loop (happens when 2nd node joins chord)
-                if self.node.successor[0] == self.node.id:
+                if successor[0] == self.node.id:
                     self.node.set_successor(x_id, x_ip)
 
         # TODO: Transfer of keys on join. refer 

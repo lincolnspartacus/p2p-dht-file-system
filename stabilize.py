@@ -15,7 +15,7 @@ class Stabilize(Thread):
             high = 6
             sleep_time = random.randint(low, high)
             time.sleep(sleep_time)
-            self.node.sync_successor_list()
+            #self.node.sync_successor_list()
             #Ping successor to see his predecessor if it's matching with current node
             try:
                 x_id, x_ip = self.node.get_successors_predecessor()
@@ -28,9 +28,10 @@ class Stabilize(Thread):
                 print('[stabilize] Sucessor has crashed!')
                 continue
 
+            successor = self.node.get_successor()
             if x_id != -1:
                 n_x_distance = utils.circular_distance(self.node.id, x_id, self.node.ring_bits)
-                n_succ_distance = utils.circular_distance(self.node.id, self.node.successor[0], self.node.ring_bits)
+                n_succ_distance = utils.circular_distance(self.node.id, successor[0], self.node.ring_bits)
 
                 # If x lies in (n, succ)
                 if n_x_distance < n_succ_distance and n_x_distance != 0:

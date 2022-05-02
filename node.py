@@ -74,8 +74,8 @@ class Node():
         # TODO : What if the returned n' is actually this node itself?? BOOM!
 
         if n_dash[0] == -1:
-            self.predecessor = (-1, 'null')
-            self.successor = (self.id, self.ip)
+            self.set_predecessor(-1, 'null')
+            self.set_successor(self.id, self.ip)
             # TODO: Add ourself to the Bootstrapper's table only after keys are transferred + pointers are set
             self.addToBootstrapper()
             return
@@ -99,6 +99,12 @@ class Node():
     def set_predecessor(self, id, ip_addr):
         self.predecessor = (id, ip_addr)
 
+    def get_predecessor(self):
+        return (self.predecessor.id, self.predecessor.ip)
+
+    def get_successor(self):
+        return (self.successor[0], self.successor[1])
+
     def set_successor(self, id, ip_addr):
         print("****SET SUCCESSOR***",id)
         self.successor = (id, ip_addr)
@@ -108,11 +114,12 @@ class Node():
     def delete_successor(self):
         # delete the successor from finger table and fill in with the most recent successor after that
         print('*****NOW DELETE SUCCESSOR*****')
-        if self.successor == -1:
+        successor = self.get_successor()
+        if successor[0] == -1:
             return -1
 
         next_suc = None
-        suc_id = self.successor[0]
+        suc_id = successor[0]
         # find the closest successor
         for i in range(0, self.ring_bits):
             suc_info = self.ftable[i] #(id, ip)
@@ -142,32 +149,34 @@ class Node():
     
     # used to contact successor and notify the existence of current node
     def notify_successor(self):
-        if self.successor[0] == -1 or self.successor[0] == self.id:
+        successor = self.get_successor()
+        if successor[0] == -1 or successor[0] == self.id:
             return
 
-        print('[notify_successor] successorId:{}  |  succesorAddr:{}'.format(self.successor[0], self.successor[1]))
+        print('[notify_successor] successorId:{}  |  succesorAddr:{}'.format(successor[0], successor[1]))
 
-        channel = grpc.insecure_channel(self.successor[1])
+        channel = grpc.insecure_channel(successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         notify_req = chord_pb2.NotifyRequest(predecessorId=self.id, addr=self.ip)
         try:
                 stub.notify(notify_req, timeout=20)
         except Exception as e:
             print(str(e))
-            print("[notify_successor] Node#{} rpc error when notify to {}".format(self.id, self.successor[0]))
+            print("[notify_successor] Node#{} rpc error when notify to {}".format(self.id, successor[0]))
 
     #Check if predecessor is alive else set it to null
     def check_predecessor(self):
-        if self.predecessor[0] == -1:
+        predecessor = self.get_predecessor()
+        if predecessor[0] == -1:
             return
-        channel = grpc.insecure_channel(self.predecessor[1])
+        channel = grpc.insecure_channel(predecessor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         check_predecessor_request = chord_pb2.Empty()
         try:
             stub.checkPredecessor(check_predecessor_request, timeout=20)
         except:
-            print("[check_predecessor] Node#{} rpc error when to {}".format(self.id, self.predecessor[0]))
-            self.predecessor = (-1, "null")
+            print("[check_predecessor] Node#{} rpc error when to {}".format(self.id, predecessor[0]))
+            self.set_predecessor(-1, "null")
 
     def update_kth_finger_table_entry(self, k, successor_id, successor_addr):
         # print('*****NOW UPDATE FINGER ENTRY*****')
@@ -178,12 +187,13 @@ class Node():
 
     def sync_successor_list(self):
         print('[sync_successor_list] ',self.successor_list)
-        if self.id == self.successor[0] or self.successor[0] == -1:
+        successor = self.get_successor()
+        if self.id == successor[0] or successor[0] == -1:
             return
         #Contact successor and update your own successor list
         #Eventually all entries will be filled
         #Good idea: Why not return Successor list when successor_predecessor rpc is called
-        channel = grpc.insecure_channel(self.successor[1])
+        channel = grpc.insecure_channel(successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         request = chord_pb2.Empty()
         try:
@@ -195,7 +205,7 @@ class Node():
             j=1
             for i, node_info in enumerate(response.succList):
             #No need to duplicate entries and add same successors, current node to our succ list
-                if j < self.successor_list_len and self.successor[0] != node_info.id and self.id != node_info.id:
+                if j < self.successor_list_len and successor[0] != node_info.id and self.id != node_info.id:
                     self.successor_list[j] = (node_info.id,node_info.ip)
                 j=j+1
         except Exception as e:
@@ -248,15 +258,17 @@ class Node():
         return (self.id, self.ip)
 
     def get_successors_predecessor(self):
-        if self.successor[0] == -1:
+        successor = self.get_successor()
+        predecessor = self.get_predecessor()
+        if successor[0] == -1:
             return (-1,"null")
-        if self.successor[0] == self.id and self.predecessor[0] == -1:
+        if successor[0] == self.id and predecessor[0] == -1:
             return (self.id, self.ip)
-        if self.successor[0] == self.id and self.predecessor[0] != -1:
+        if successor[0] == self.id and predecessor[0] != -1:
             print("Updating successor")
-            self.set_successor(self.predecessor[0],self.predecessor[1])
+            self.set_successor(predecessor[0], predecessor[1])
             return (self.id, self.ip)
-        channel = grpc.insecure_channel(self.successor[1])
+        channel = grpc.insecure_channel(successor[1])
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         request = chord_pb2.Empty()
         response = stub.findSuccessorsPred(request)
