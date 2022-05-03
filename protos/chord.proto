@@ -7,6 +7,8 @@ service ChordService {
 
     rpc notify(NotifyRequest) returns (NotifyResponse) {}
     rpc checkPredecessor(Empty) returns (Empty) {}
+    rpc checkAlive(Empty) returns (Empty) {}
+
     rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
 }
 

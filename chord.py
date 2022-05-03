@@ -76,6 +76,11 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         print("[checkPredecessor] node {} received request".format(self.node.id))
         response = chord_pb2.Empty()
         return response
+    
+    def checkAlive(self, request, context):
+        print("[Ping] node {} to check liveness ".format(self.node.id))
+        response = chord_pb2.Empty()
+        return response
     '''
     Debug RPC interface
     '''

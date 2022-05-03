@@ -3,12 +3,15 @@ import chord_pb2_grpc
 import chord_pb2
 import random
 from concurrent import futures
+import threading
 
 class BootstrapServicer(chord_pb2_grpc.BootstrapServiceServicer):
     def __init__(self):
         super().__init__()
-        self.table = [] # Stores node info in (ID, IP addr) format
-    
+        self.table = {} # Stores node info in (ID, IP addr) format
+        self.node_counter = 0
+        self.tbLock = threading.Lock()
+
     '''
     Picks a random node from the tracker table and returns it
     '''
@@ -16,10 +19,33 @@ class BootstrapServicer(chord_pb2_grpc.BootstrapServiceServicer):
         response = chord_pb2.NodeInfo()
         response.id = -1
         response.ip = "null"
-        if len(self.table) > 0:
-            node = random.choice(self.table)
-            response.id = node[0]
-            response.ip = node[1]
+
+        self.tbLock.acquire()
+        keyList = self.table.keys()
+        self.tbLock.release()
+        random.shuffle(keyList)
+
+        for key in keyList:
+            try:
+                self.tbLock.acquire()
+                targetIP = self.table[key]
+                self.tbLock.release()
+            except:
+                continue
+            try:
+                channel = grpc.insecure_channel(targetIP)
+                stub = chord_pb2_grpc.ChordServiceStub(channel)
+                request = chord_pb2.Empty()
+                stub.checkAlive(request,timeout=5)
+                response.id = key
+                response.ip = targetIP
+                print(f'[tracker] Inside getNode = ({response.id}, {response.ip})')
+                return response
+
+            except:
+                self.tbLock.acquire()
+                self.table.pop(key,None)
+                self.tbLock.release()
 
         print(f'[tracker] Inside getNode = ({response.id}, {response.ip})')
         return response
@@ -31,8 +57,12 @@ class BootstrapServicer(chord_pb2_grpc.BootstrapServiceServicer):
         response = chord_pb2.Empty()
         table_entry = (request.id, request.ip)
         print(f'[tracker] Inside addNode = {table_entry}')
-        if table_entry not in self.table:
-            self.table.append(table_entry)
+
+        self.tbLock.acquire()
+        if table_entry[0] not in self.table:
+            self.table[table_entry[0]] = table_entry
+        self.tbLock.release()
+
         return response
     
     '''
@@ -40,7 +70,11 @@ class BootstrapServicer(chord_pb2_grpc.BootstrapServiceServicer):
     '''
     def clearTable(self, request, context):
         response = chord_pb2.Empty()
+        
+        self.tbLock.acquire()
         self.table.clear()
+        self.tbLock.release()
+
         print('[tracker] Clearing table')
         return response
 
