@@ -10,6 +10,7 @@ import chord_pb2
 from stabilize import Stabilize
 from fix_finger import FixFinger
 from concurrent import futures
+import os
 
 class Node():
     def __init__(self, ring_bits):
@@ -38,6 +39,10 @@ class Node():
         # Bootstrapper info
         #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
         self.bootstrapper_ip = 'localhost:40051'
+
+        self.storage_dir = sys.argv[1]+'/'
+        if not os.path.isdir(self.storage_dir):
+            os.mkdir(self.storage_dir)
 
 
     '''

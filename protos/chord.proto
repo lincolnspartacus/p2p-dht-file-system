@@ -8,6 +8,8 @@ service ChordService {
     rpc notify(NotifyRequest) returns (NotifyResponse) {}
     rpc checkPredecessor(Empty) returns (Empty) {}
     rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
+    rpc upload(stream Chunk) returns (Reply) {}
+    rpc download(Request) returns (stream Chunk) {}
 }
 
 service BootstrapService {
@@ -63,4 +65,16 @@ message Pair {
 
 message NotifyResponse {
     int32 result = 1;
+}
+
+message Chunk {
+  bytes buffer = 1;
+}
+
+message Request {
+  string name = 1;
+}
+
+message Reply {
+  int32 length = 1;
 }
