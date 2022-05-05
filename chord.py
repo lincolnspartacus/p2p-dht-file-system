@@ -3,6 +3,7 @@ import chord_pb2_grpc
 import chord_pb2
 import utils
 from concurrent import futures
+import os
 
 class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
@@ -95,3 +96,36 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         succlist_nodeinfo = [chord_pb2.NodeInfo(id = x[0], ip = x[1]) for x in self.node.successor_list]
         response = chord_pb2.getSuccessorListResponse(succList = succlist_nodeinfo)
         return response
+
+    def save_chunks_to_file(self, chunks, filename):
+        print('[chord] File save')
+        with open(self.node.storage_dir+filename, 'wb') as f:
+            for chunk in chunks:
+                print(chunk.buffer)
+                f.write(chunk.buffer)
+
+    def putFile(self, request_iterator, context):
+        print("[chord] File upload")
+        # TODO : Add suppport for sending file name, key value, public key 
+        # in first chunk
+        info = ''
+        for chunk in request_iterator:
+            print(chunk.buffer)
+            info = chunk.buffer
+            break
+        file_name = info.decode()
+        self.save_chunks_to_file(request_iterator, file_name)
+        
+        return chord_pb2.PutFileResponse(length=os.path.getsize(self.node.storage_dir+file_name))
+
+    def get_file_chunks(self, filename):
+        with open(self.node.storage_dir+filename, 'rb') as f:
+            while True:
+                piece = f.read()
+                if len(piece) == 0:
+                    return
+                yield chord_pb2.Chunk(buffer=piece)
+
+    def getFile(self, request, context):
+        print("[chord] Download request for file",request.name)    
+        return self.get_file_chunks(request.name)
