@@ -44,14 +44,14 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.Empty.SerializeToString,
                 response_deserializer=chord__pb2.getSuccessorListResponse.FromString,
                 )
-        self.upload = channel.stream_unary(
-                '/ChordService/upload',
+        self.putFile = channel.stream_unary(
+                '/ChordService/putFile',
                 request_serializer=chord__pb2.Chunk.SerializeToString,
-                response_deserializer=chord__pb2.Reply.FromString,
+                response_deserializer=chord__pb2.PutFileResponse.FromString,
                 )
-        self.download = channel.unary_stream(
-                '/ChordService/download',
-                request_serializer=chord__pb2.Request.SerializeToString,
+        self.getFile = channel.unary_stream(
+                '/ChordService/getFile',
+                request_serializer=chord__pb2.GetFileRequest.SerializeToString,
                 response_deserializer=chord__pb2.Chunk.FromString,
                 )
 
@@ -95,13 +95,13 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def upload(self, request_iterator, context):
+    def putFile(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def download(self, request, context):
+    def getFile(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -140,14 +140,14 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     request_deserializer=chord__pb2.Empty.FromString,
                     response_serializer=chord__pb2.getSuccessorListResponse.SerializeToString,
             ),
-            'upload': grpc.stream_unary_rpc_method_handler(
-                    servicer.upload,
+            'putFile': grpc.stream_unary_rpc_method_handler(
+                    servicer.putFile,
                     request_deserializer=chord__pb2.Chunk.FromString,
-                    response_serializer=chord__pb2.Reply.SerializeToString,
+                    response_serializer=chord__pb2.PutFileResponse.SerializeToString,
             ),
-            'download': grpc.unary_stream_rpc_method_handler(
-                    servicer.download,
-                    request_deserializer=chord__pb2.Request.FromString,
+            'getFile': grpc.unary_stream_rpc_method_handler(
+                    servicer.getFile,
+                    request_deserializer=chord__pb2.GetFileRequest.FromString,
                     response_serializer=chord__pb2.Chunk.SerializeToString,
             ),
     }
@@ -263,7 +263,7 @@ class ChordService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def upload(request_iterator,
+    def putFile(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -273,14 +273,14 @@ class ChordService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/ChordService/upload',
+        return grpc.experimental.stream_unary(request_iterator, target, '/ChordService/putFile',
             chord__pb2.Chunk.SerializeToString,
-            chord__pb2.Reply.FromString,
+            chord__pb2.PutFileResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def download(request,
+    def getFile(request,
             target,
             options=(),
             channel_credentials=None,
@@ -290,8 +290,8 @@ class ChordService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/ChordService/download',
-            chord__pb2.Request.SerializeToString,
+        return grpc.experimental.unary_stream(request, target, '/ChordService/getFile',
+            chord__pb2.GetFileRequest.SerializeToString,
             chord__pb2.Chunk.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

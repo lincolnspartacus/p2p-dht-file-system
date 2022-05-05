@@ -9,8 +9,9 @@ class Client():
 def main():
     print("[Client]")
     client = Client()
-    status,data = client.client_lib.put("abc.txt")
-    status,data = client.client_lib.get("abc.txt")
+    status = client.client_lib.put("abc.txt")
+    #Get call  will result on data on self.storage_path
+    status = client.client_lib.get("abc.txt")
 
 if __name__ == "__main__":
     main()

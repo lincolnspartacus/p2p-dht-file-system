@@ -40,7 +40,7 @@ class Node():
         #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
         self.bootstrapper_ip = 'localhost:40051'
 
-        self.storage_dir = sys.argv[1]+'/'
+        self.storage_dir = str(self.id)+'/'
         if not os.path.isdir(self.storage_dir):
             os.mkdir(self.storage_dir)
 
@@ -332,7 +332,9 @@ class Node():
 
     def serve(self):
         ip = '0.0.0.0:' + sys.argv[1]
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),options=options)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
             chord.ChordServicer(self), server)
         server.add_insecure_port(ip)

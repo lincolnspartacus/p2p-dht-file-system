@@ -104,7 +104,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                 print(chunk.buffer)
                 f.write(chunk.buffer)
 
-    def upload(self, request_iterator, context):
+    def putFile(self, request_iterator, context):
         print("[chord] File upload")
         # TODO : Add suppport for sending file name, key value, public key 
         # in first chunk
@@ -116,7 +116,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         file_name = info.decode()
         self.save_chunks_to_file(request_iterator, file_name)
         
-        return chord_pb2.Reply(length=os.path.getsize(self.node.storage_dir+file_name))
+        return chord_pb2.PutFileResponse(length=os.path.getsize(self.node.storage_dir+file_name))
 
     def get_file_chunks(self, filename):
         with open(self.node.storage_dir+filename, 'rb') as f:
@@ -126,6 +126,6 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                     return
                 yield chord_pb2.Chunk(buffer=piece)
 
-    def download(self, request, context):
+    def getFile(self, request, context):
         print("[chord] Download request for file",request.name)    
         return self.get_file_chunks(request.name)

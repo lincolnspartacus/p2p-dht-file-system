@@ -45,67 +45,77 @@ class ChordClient():
             for chunk in chunks:
                 f.write(chunk.buffer)
 
+    def find_responsible_node(self,key,target_ip):
+
+        is_final = False
+        while not is_final:
+            channel = grpc.insecure_channel(target_ip)
+            stub = chord_pb2_grpc.ChordServiceStub(channel)
+            request = chord_pb2.FindSuccessorRequest(id = key)
+            response = stub.findSuccessor(request)
+            target_ip = response.ip
+            is_final = response.is_final
+
+        return response
+
     def put(self, filename):
         '''
-        Returns 1 on success, -1 on failure
+        Returns 0 on success, -1 on failure
         Compute hash value for filename
         Contact bootstrapper node for a random node
-        Place a request for the key 
+        Do a lookup for the node that is responsible for the key 
         Contact the node directly and complete the get call
-        If node crashes in the middle, start again
-        If key doesnt exist, have different failure in RPC call
+        TODO: If node crashes in the middle, start again
+        TODO: If key doesnt exist, have different failure in RPC call
         '''
         req_node = self.contactBootstrapper()
         
         if req_node[0] == -1:
-            return -1,"null"
+            return -1
 
         file_hash = int(hashlib.sha1(filename.encode('utf-8')).hexdigest(), 16) % (2**self.ring_bits)
-        print(file_hash)
-        target_ip = req_node[1]
-        channel = grpc.insecure_channel(target_ip)
-        stub = chord_pb2_grpc.ChordServiceStub(channel)
-        request = chord_pb2.FindSuccessorRequest(id = file_hash)
-        response = stub.findSuccessor(request)
-        print(response)
+        print("[Chord Client] File Hash",file_hash)
 
-        in_file_name = self.client.storage_path+filename
-        channel = grpc.insecure_channel(response.ip)
+        response = self.find_responsible_node(file_hash, req_node[1])
+        print("[Chord Client] findSuccessor response",response)
+
+        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+        channel = grpc.insecure_channel(response.ip,options =options)
+        # TODO : Try/except logic on communication with nodes
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         chunks_generator = self.get_file_chunks(filename)
 
-        response = stub.upload(chunks_generator)
+        response = stub.putFile(chunks_generator)
+        #Enable assertion?
         #assert response.length == os.path.getsize(in_file_name)
-        return 0,"pass"
+        return 0
 
     def get(self, filename):
         '''
-        Returns 1 on success, -1 on failure
+        Returns 0 on success, -1 on failure
         Compute hash value for filename
         Contact bootstrapper node for a random node
-        Place a request for the key 
+        Do a lookup for the node that is responsible for the key 
         Contact the node directly and complete the get call
-        If node crashes in the middle, start again
-        If key doesnt exist, have different failure in RPC call
+        TODO : If node crashes in the middle, start again
+        TODO : If key doesnt exist, have different failure in RPC call
         '''
         req_node = self.contactBootstrapper()
         
         if req_node[0] == -1:
-            return -1,"null"
+            return -1
 
         file_hash = int(hashlib.sha1(filename.encode('utf-8')).hexdigest(), 16) % (2**self.ring_bits)
-        print(file_hash)
-        target_ip = req_node[1]
-        channel = grpc.insecure_channel(target_ip)
+        print("[Chord Client] File Hash",file_hash)
+        response = self.find_responsible_node(file_hash, req_node[1])
+        print("[Chord Client] findSuccessor response",response)
+       
+        # TODO : Fix for large files required, max messsage length not sufficient
+        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+        channel = grpc.insecure_channel(response.ip, options=options)
         stub = chord_pb2_grpc.ChordServiceStub(channel)
-        request = chord_pb2.FindSuccessorRequest(id = file_hash)
-        response = stub.findSuccessor(request)
-        print(response)
-
-        channel = grpc.insecure_channel(response.ip)
-        stub = chord_pb2_grpc.ChordServiceStub(channel)
-        response = stub.download(chord_pb2.Request(name=filename))
+        response = stub.getFile(chord_pb2.GetFileRequest(name=filename))
         target_file_name = self.client.storage_path + filename
         self.save_chunks_to_file(response, target_file_name)
         #assert response.length == os.path.getsize(in_file_name)
-        return 0,"pass"
+        return 0
