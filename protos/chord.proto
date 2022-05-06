@@ -7,6 +7,8 @@ service ChordService {
 
     rpc notify(NotifyRequest) returns (NotifyResponse) {}
     rpc checkPredecessor(Empty) returns (Empty) {}
+    rpc checkAlive(Empty) returns (Empty) {}
+
     rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
     rpc putFile(stream Chunk) returns (PutFileResponse) {}
     rpc getFile(GetFileRequest) returns (stream Chunk) {}
@@ -73,6 +75,8 @@ message Chunk {
 
 message GetFileRequest {
   string name = 1;
+  bytes signature = 2;
+  bytes publickey = 3;
 }
 
 message PutFileResponse {
