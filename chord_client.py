@@ -22,8 +22,10 @@ class ChordClient():
         if key_path!="":
             self.key_path = key_path
         else:
-            self.key_path = os.path.join(storage_path,".keys/")
-
+            self.key_path = os.path.join(storage_path,"keys")
+        
+        if not os.path.exists(self.key_path):
+            os.makedirs(self.key_path)
         self.auth = Auth(self.key_path)
 
     def contactBootstrapper(self):
@@ -52,9 +54,13 @@ class ChordClient():
                 yield chord_pb2.Chunk(buffer=piece)
 
     def save_chunks_to_file(self, chunks, filename):
-        with open(filename, 'wb') as f:
-            for chunk in chunks:
-                f.write(chunk.buffer)
+        f = open(filename, 'wb')
+        
+        for chunk in chunks:
+            print(chunk.buffer)
+            f.write(chunk.buffer)
+
+        f.close()
 
     def find_responsible_node(self,key,target_ip):
 
@@ -143,6 +149,9 @@ class ChordClient():
         options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
         channel = grpc.insecure_channel(response.ip, options=options)
         stub = chord_pb2_grpc.ChordServiceStub(channel)
+        
+        ## Generate a modified key. For testing
+        #pbkey_bytes = self.auth.modified_key()
 
         try:
             response = stub.getFile(chord_pb2.GetFileRequest(name=filename,signature=signature,publickey=pbkey_bytes))

@@ -10,11 +10,15 @@ def main():
     status = client.put("abc.txt")
     if status == -1:
         print("put failed")
+    else:
+        print("Put request: Success")
     
     #Get call  will result on data on local_path
     status = client.get("abc.txt")
     if status == -1:
         print("get failed")
-
+    else:
+        print("Get request: Success")
+        
 if __name__ == "__main__":
     main()

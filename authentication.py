@@ -10,6 +10,7 @@ class Auth():
         self.keyfile = os.path.join(path,'myprivatekey.pem')
 
         if os.path.exists(self.keyfile):
+            print("key file exists:")
             f = open(self.keyfile,'rt')
             self.private_key = ECC.import_key(f.read())  
         else:
@@ -29,6 +30,12 @@ class Auth():
         signer = DSS.new(self.private_key, 'fips-186-3') # Signature = Private key + Hash(Message)
         signature = signer.sign(h)
         return signature
+
+    def modified_key(self):
+        new_private_key = ECC.generate(curve='P-256')
+        new_public_key = new_private_key.public_key()
+        new_pbkey_bytes = new_public_key.export_key(format='DER')
+        return new_pbkey_bytes
 
 
 def validate_signature(signature,pbkey_bytes,file_name):

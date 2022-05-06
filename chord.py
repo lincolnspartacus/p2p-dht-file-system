@@ -150,6 +150,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         if not validate_signature(signature,pbkey_bytes,file_name):
             context.set_code(grpc.StatusCode.PERMISSION_DENIED)
             context.set_details('Signature mismatch!')
+            print("[chord] Get request failed")
             return chord_pb2.Chunk()
 
         return self.get_file_chunks(request.name)
