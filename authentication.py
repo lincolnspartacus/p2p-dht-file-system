@@ -1,3 +1,4 @@
+from email import message
 import os
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
@@ -30,15 +31,15 @@ class Auth():
         return signature
 
 
-def validate_signature(signature,pbkey_bytes,file_name,ring_bits):
+def validate_signature(signature,pbkey_bytes,file_name):
     
-    hashkey = pbkey_bytes+file_name.encode()
-    file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**ring_bits)
+    message = file_name.encode()
+    hashkey = SHA256.new(message)
     
     public_key = ECC.import_key(pbkey_bytes)
     verifier = DSS.new(public_key, 'fips-186-3')
     try:
-        verifier.verify(file_hash, signature)
+        verifier.verify(hashkey, signature)
         print("[Server] The message is authentic.")
     except ValueError:
         print("[Server] The message is not authentic.")
