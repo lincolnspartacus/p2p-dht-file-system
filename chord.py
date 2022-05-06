@@ -119,12 +119,12 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             print(chunk.buffer)
             info = chunk.buffer
             signature = info[:64]
-            publickey = info[64:64+91]
+            pbkey_bytes = info[64:64+91]
             file_name = info[64+91:].decode()
             
             # TODO : Match the public key with the one stored locally with data.
             
-            if not validate_signature(signature,publickey,file_name,self.node.ring_bits):
+            if not validate_signature(signature,pbkey_bytes,file_name,self.node.ring_bits):
                 context.set_code(grpc.StatusCode.PERMISSION_DENIED)
                 context.set_details('Signature mismatch!')
                 return chord_pb2.PutFileResponse()
@@ -145,9 +145,9 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         print("[chord] Download request for file",request.name)    
         file_name = request.name
         signature = request.signature
-        publickey = request.publickey
-
-        if not validate_signature(signature,publickey,file_name,self.node.ring_bits):
+        pbkey_bytes = request.publickey
+        
+        if not validate_signature(signature,pbkey_bytes,file_name,self.node.ring_bits):
             context.set_code(grpc.StatusCode.PERMISSION_DENIED)
             context.set_details('Signature mismatch!')
             return chord_pb2.Chunk()

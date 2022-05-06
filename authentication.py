@@ -41,6 +41,6 @@ def validate_signature(signature,pbkey_bytes,file_name,ring_bits):
         verifier.verify(file_hash, signature)
         print("[Server] The message is authentic.")
     except ValueError:
-        return False
         print("[Server] The message is not authentic.")
+        return False
     return True
