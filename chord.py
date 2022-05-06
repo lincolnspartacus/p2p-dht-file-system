@@ -4,7 +4,7 @@ import chord_pb2
 import utils
 from concurrent import futures
 import os
-
+from authentication import validate_signature
 class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
     def __init__(self, node):
@@ -114,14 +114,24 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         # TODO : Add suppport for sending file name, key value, public key 
         # in first chunk
         info = ''
+        file_name = None
         for chunk in request_iterator:
             print(chunk.buffer)
             info = chunk.buffer
+            signature = info[:64]
+            publickey = info[64:64+91]
+            file_name = info[64+91:].decode()
+            
+            # TODO : Match the public key with the one stored locally with data.
+            
+            if not validate_signature(signature,publickey,file_name,self.node.ring_bits):
+                context.set_code(grpc.StatusCode.PERMISSION_DENIED)
+                context.set_details('Signature mismatch!')
+                return chord_pb2.PutFileResponse()
             break
-        file_name = info.decode()
-        self.save_chunks_to_file(request_iterator, file_name)
-        
-        return chord_pb2.PutFileResponse(length=os.path.getsize(self.node.storage_dir+file_name))
+
+        self.save_chunks_to_file(request_iterator, file_name)        
+        return chord_pb2.PutFileResponse(length=os.path.getsize(os.path.join(self.node.storage_dir,file_name)))
 
     def get_file_chunks(self, filename):
         with open(self.node.storage_dir+filename, 'rb') as f:
@@ -133,4 +143,13 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
     def getFile(self, request, context):
         print("[chord] Download request for file",request.name)    
+        file_name = request.name
+        signature = request.signature
+        publickey = request.publickey
+
+        if not validate_signature(signature,publickey,file_name,self.node.ring_bits):
+            context.set_code(grpc.StatusCode.PERMISSION_DENIED)
+            context.set_details('Signature mismatch!')
+            return chord_pb2.Chunk()
+
         return self.get_file_chunks(request.name)

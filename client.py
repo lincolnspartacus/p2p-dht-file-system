@@ -1,17 +1,20 @@
 from chord_client import ChordClient
 
-class Client():
-    def __init__(self):
-        self.client_lib = ChordClient(self)
-        self.storage_path = "client_data/"
-
-
 def main():
     print("[Client]")
-    client = Client()
-    status = client.client_lib.put("abc.txt")
-    #Get call  will result on data on self.storage_path
-    status = client.client_lib.get("abc.txt")
+
+    # Local path for storing getfiles in (local_path/) and cryptography keys(local_path/.keys/)    
+    local_path = "client_data/"
+    client = ChordClient(local_path)
+    
+    status = client.put("abc.txt")
+    if status == -1:
+        print("put failed")
+    
+    #Get call  will result on data on local_path
+    status = client.get("abc.txt")
+    if status == -1:
+        print("get failed")
 
 if __name__ == "__main__":
     main()
