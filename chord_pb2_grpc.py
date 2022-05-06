@@ -44,6 +44,16 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.Empty.SerializeToString,
                 response_deserializer=chord__pb2.getSuccessorListResponse.FromString,
                 )
+        self.putFile = channel.stream_unary(
+                '/ChordService/putFile',
+                request_serializer=chord__pb2.Chunk.SerializeToString,
+                response_deserializer=chord__pb2.PutFileResponse.FromString,
+                )
+        self.getFile = channel.unary_stream(
+                '/ChordService/getFile',
+                request_serializer=chord__pb2.GetFileRequest.SerializeToString,
+                response_deserializer=chord__pb2.Chunk.FromString,
+                )
 
 
 class ChordServiceServicer(object):
@@ -85,6 +95,18 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def putFile(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ChordServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -117,6 +139,16 @@ def add_ChordServiceServicer_to_server(servicer, server):
                     servicer.getSuccessorList,
                     request_deserializer=chord__pb2.Empty.FromString,
                     response_serializer=chord__pb2.getSuccessorListResponse.SerializeToString,
+            ),
+            'putFile': grpc.stream_unary_rpc_method_handler(
+                    servicer.putFile,
+                    request_deserializer=chord__pb2.Chunk.FromString,
+                    response_serializer=chord__pb2.PutFileResponse.SerializeToString,
+            ),
+            'getFile': grpc.unary_stream_rpc_method_handler(
+                    servicer.getFile,
+                    request_deserializer=chord__pb2.GetFileRequest.FromString,
+                    response_serializer=chord__pb2.Chunk.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -227,6 +259,40 @@ class ChordService(object):
         return grpc.experimental.unary_unary(request, target, '/ChordService/getSuccessorList',
             chord__pb2.Empty.SerializeToString,
             chord__pb2.getSuccessorListResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def putFile(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/ChordService/putFile',
+            chord__pb2.Chunk.SerializeToString,
+            chord__pb2.PutFileResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/ChordService/getFile',
+            chord__pb2.GetFileRequest.SerializeToString,
+            chord__pb2.Chunk.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

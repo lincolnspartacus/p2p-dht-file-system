@@ -10,6 +10,8 @@ service ChordService {
     rpc checkAlive(Empty) returns (Empty) {}
 
     rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
+    rpc putFile(stream Chunk) returns (PutFileResponse) {}
+    rpc getFile(GetFileRequest) returns (stream Chunk) {}
 }
 
 service BootstrapService {
@@ -65,4 +67,16 @@ message Pair {
 
 message NotifyResponse {
     int32 result = 1;
+}
+
+message Chunk {
+  bytes buffer = 1;
+}
+
+message GetFileRequest {
+  string name = 1;
+}
+
+message PutFileResponse {
+  int32 length = 1;
 }

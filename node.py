@@ -8,7 +8,9 @@ import sys
 import chord_pb2_grpc
 import chord_pb2
 from stabilize import Stabilize
+from fix_finger import FixFinger
 from concurrent import futures
+import os
 
 class Node():
     def __init__(self, ring_bits):
@@ -28,6 +30,7 @@ class Node():
 
         #Utility threads
         self.stabilize = Stabilize(self)
+        self.fix_finger = FixFinger(self)
 
         # Locks
         self.successor_lock = threading.Lock()
@@ -36,6 +39,10 @@ class Node():
         # Bootstrapper info
         #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'
         self.bootstrapper_ip = 'localhost:40051'
+
+        self.storage_dir = str(self.id)+'/'
+        if not os.path.isdir(self.storage_dir):
+            os.mkdir(self.storage_dir)
 
 
     '''
@@ -71,6 +78,29 @@ class Node():
         request = chord_pb2.NodeInfo(id = self.id, ip = self.ip)
         stub.addNode(request)
 
+    '''
+    Find the current successor for the given chord identifier
+    Request is routed and the chord ring is traversed starting from target_ip 
+    '''
+    def find_successor(self, target_id, target_ip):
+        try:
+            # successor = n'.find successor(n)
+            is_final = False
+            while not is_final:
+                channel = grpc.insecure_channel(target_ip)
+                stub = chord_pb2_grpc.ChordServiceStub(channel)
+                request = chord_pb2.FindSuccessorRequest(id = target_id)
+                response = stub.findSuccessor(request)
+                if response.ip == target_ip: #Break the loop
+                    is_final = True
+                else: 
+                    is_final = response.is_final
+                target_ip = response.ip
+            return (target_id, target_ip)
+        except:
+            print('[find_successor] {}: Failed target_id {} target_ip {}'.format(self.id, target_id, target_ip))
+            return (-1, 'null')
+       
     '''
     Join the existing chord ring OR become the first node
     '''
@@ -302,7 +332,9 @@ class Node():
 
     def serve(self):
         ip = '0.0.0.0:' + sys.argv[1]
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),options=options)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
             chord.ChordServicer(self), server)
         server.add_insecure_port(ip)
@@ -334,6 +366,7 @@ def main():
     #node.contactBootstrapper()
     node.join()
     node.stabilize.start()
+    # node.fix_finger.start()
     node.serve()
 
 if __name__ == "__main__":
