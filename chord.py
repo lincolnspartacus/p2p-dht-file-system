@@ -102,9 +102,13 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         response = chord_pb2.getSuccessorListResponse(succList = succlist_nodeinfo)
         return response
 
-    def save_chunks_to_file(self, chunks, filename):
+    def save_chunks_to_file(self, chunks, filename, pbkey_bytes):
         print('[chord] File save')
-        with open(self.node.storage_dir+filename, 'wb') as f:
+        target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex())
+        if not os.path.exists(target_filename):
+            os.makedirs(target_filename) # Create Dir
+        target_filename = os.path.join(target_filename, filename)
+        with open(target_filename, 'wb') as f:
             for chunk in chunks:
                 print(chunk.buffer)
                 f.write(chunk.buffer)
@@ -130,11 +134,12 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                 return chord_pb2.PutFileResponse()
             break
 
-        self.save_chunks_to_file(request_iterator, file_name)        
+        self.save_chunks_to_file(request_iterator, file_name, pbkey_bytes)
         return chord_pb2.PutFileResponse(length=os.path.getsize(os.path.join(self.node.storage_dir,file_name)))
 
-    def get_file_chunks(self, filename):
-        with open(self.node.storage_dir+filename, 'rb') as f:
+    def get_file_chunks(self, filename, pbkey_bytes):
+        target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), filename)
+        with open(target_filename, 'rb') as f:
             while True:
                 piece = f.read()
                 if len(piece) == 0:
@@ -153,4 +158,4 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             print("[chord] Get request failed")
             return chord_pb2.Chunk()
 
-        return self.get_file_chunks(request.name)
+        return self.get_file_chunks(request.name, pbkey_bytes)
