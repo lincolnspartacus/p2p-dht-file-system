@@ -39,7 +39,6 @@ class ChordClient():
 
     def get_file_chunks(self, filename, signature, pbkey_bytes):
         print("[chord_client] get_file_chunks")
-        # TODO : Add key, public key info in the first chunk
         
         #signature+publickey+filename:91+64bytes+filename
         key=signature+pbkey_bytes+filename.encode()

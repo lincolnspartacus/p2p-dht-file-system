@@ -172,42 +172,6 @@ class Node():
         ret = self.successor_list.copy()
         self.successor_lock.release()
         return ret
-
-    def delete_successor(self):
-        # delete the successor from finger table and fill in with the most recent successor after that
-        print('*****NOW DELETE SUCCESSOR*****')
-        successor = self.get_successor()
-        if successor[0] == -1:
-            return -1
-
-        next_suc = None
-        suc_id = successor[0]
-        # find the closest successor
-        for i in range(0, self.ring_bits):
-            suc_info = self.ftable[i] #(id, ip)
-            if suc_info[0] != -1 and suc_info[0] != suc_id:
-                next_suc = suc_info
-                break
-
-        # for loop needed because Finger table can be and we need update only "N14" entries
-        # N8 + 1 -> N14 
-        # N8 + 2 -> N14 
-        # N8 + 4 -> N14 
-        # N8 + 8 -> N21
-        for i in range(0, self.ring_bits):
-            # ftable structure: [(id, ip), (id, ip)]
-            if self.ftable[i][0] == suc_id:
-                # replace this successor with next possible successor, otherwise to set it to be (-1, null)
-                if next_suc is not None:
-                    self.ftable[i] = next_suc
-                else:
-                    self.ftable[i] = (-1, 'null')
-            else:
-                break
-
-        self.set_successor(self.ftable[0][0], self.ftable[0][1])
-        print('[delete_successor] - {} finger table is {}'.format(self.id, self.ftable))
-        return 0
     
     # used to contact successor and notify the existence of current node
     def notify_successor(self):
@@ -240,13 +204,6 @@ class Node():
             print("[check_predecessor] Node#{} rpc error when to {}".format(self.id, predecessor[0]))
             self.set_predecessor(-1, "null")
 
-    def update_kth_finger_table_entry(self, k, successor_id, successor_addr):
-        # print('*****NOW UPDATE FINGER ENTRY*****')
-        self.ftable[k] = (successor_id, successor_addr)
-        if k == 0:
-           self.set_successor(successor_id, successor_addr)
-        # print('node {} updated finger table is: {}'.format(self.id, str(self.finger_table)))
-
     def sync_successor_list(self):
         print('[sync_successor_list] ',self.successor_list)
         successor = self.get_successor()
@@ -278,21 +235,6 @@ class Node():
             new_list.pop(0)
             new_list.append((self.id, self.ip)) # Add ourself as a successor at the end. NOTE : Don't put -1 here
             self.set_successor_list(new_list)
-
-    '''
-    Given a key k, find the node responsible for k
-    Working diagram -
-    <node> <---------> Node A
-    <node> <---------> Node B ... (no RPC chaining)
-    '''
-    def findSuccessor(self, k):
-        # channel = grpc.insecure_channel(n_dash[1])
-        # stub = chord_pb2_grpc.ChordServiceStub(channel)
-        # request = chord_pb2.FindSuccessorRequest(id = self.id)
-        # response = stub.findSuccessor(request)
-
-        if k > self.id and k <= self.successor[0]:
-            return self.successor
         
     '''
     Search the Finger Table for the highest predecessor of k

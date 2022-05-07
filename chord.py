@@ -115,8 +115,6 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
     def putFile(self, request_iterator, context):
         print("[chord] File upload")
-        # TODO : Add suppport for sending file name, key value, public key 
-        # in first chunk
         info = ''
         file_name = None
         for chunk in request_iterator:
