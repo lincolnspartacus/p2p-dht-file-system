@@ -35,6 +35,13 @@ class Node():
         # Locks
         self.successor_lock = threading.Lock()
         self.predecessor_lock = threading.Lock()
+        self.replicated_lock = threading.Lock()
+        self.owner_lock = threading.Lock()
+
+        # Data structures to track files on this node
+        # {public_key+filname : (fileid, checksum)}
+        self.owner_dict = {}
+        self.replicated_dict = {}
 
         # Bootstrapper info
         #self.bootstrapper_ip = 'c220g1-031107.wisc.cloudlab.us:50051'

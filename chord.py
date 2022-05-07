@@ -1,3 +1,4 @@
+import hashlib
 import grpc
 import chord_pb2_grpc
 import chord_pb2
@@ -133,7 +134,17 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             break
 
         self.save_chunks_to_file(request_iterator, file_name, pbkey_bytes)
-        return chord_pb2.PutFileResponse(length=os.path.getsize(os.path.join(self.node.storage_dir,file_name)))
+
+        # Add this file to self.node.owner_dict
+        self.node.owner_lock.acquire()
+        hashkey = pbkey_bytes + file_name.encode()
+        file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.node.ring_bits)
+        self.node.owner_dict[pbkey_bytes.hex() + '_' + file_name] = (file_hash, 0)
+        self.node.owner_lock.release()
+
+        print(f'[chord] Put : Owner List = {self.node.owner_dict}')
+        target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), file_name)
+        return chord_pb2.PutFileResponse(length=os.path.getsize(target_filename))
 
     def get_file_chunks(self, filename, pbkey_bytes):
         target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), filename)
