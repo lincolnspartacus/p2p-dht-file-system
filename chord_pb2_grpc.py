@@ -44,6 +44,11 @@ class ChordServiceStub(object):
                 request_serializer=chord__pb2.Empty.SerializeToString,
                 response_deserializer=chord__pb2.Empty.FromString,
                 )
+        self.replicateFile = channel.stream_unary(
+                '/ChordService/replicateFile',
+                request_serializer=chord__pb2.ReplicateRequest.SerializeToString,
+                response_deserializer=chord__pb2.Empty.FromString,
+                )
         self.getSuccessorList = channel.unary_unary(
                 '/ChordService/getSuccessorList',
                 request_serializer=chord__pb2.Empty.SerializeToString,
@@ -100,6 +105,12 @@ class ChordServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def replicateFile(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def getSuccessorList(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -149,6 +160,11 @@ def add_ChordServiceServicer_to_server(servicer, server):
             'checkAlive': grpc.unary_unary_rpc_method_handler(
                     servicer.checkAlive,
                     request_deserializer=chord__pb2.Empty.FromString,
+                    response_serializer=chord__pb2.Empty.SerializeToString,
+            ),
+            'replicateFile': grpc.stream_unary_rpc_method_handler(
+                    servicer.replicateFile,
+                    request_deserializer=chord__pb2.ReplicateRequest.FromString,
                     response_serializer=chord__pb2.Empty.SerializeToString,
             ),
             'getSuccessorList': grpc.unary_unary_rpc_method_handler(
@@ -274,6 +290,23 @@ class ChordService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChordService/checkAlive',
             chord__pb2.Empty.SerializeToString,
+            chord__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def replicateFile(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/ChordService/replicateFile',
+            chord__pb2.ReplicateRequest.SerializeToString,
             chord__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

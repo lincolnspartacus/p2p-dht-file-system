@@ -7,6 +7,12 @@ def main():
     local_path = "client_data/"
     client = ChordClient(local_path)
     
+    status = client.put("LICENSE")
+    if status == -1:
+        print("put failed")
+    else:
+        print("Put request: Success")
+    
     status = client.put("abc.txt")
     if status == -1:
         print("put failed")
@@ -14,11 +20,11 @@ def main():
         print("Put request: Success")
     
     #Get call  will result on data on local_path
-    status = client.get("abc.txt")
-    if status == -1:
-        print("get failed")
-    else:
-        print("Get request: Success")
+    # status = client.get("abc.txt")
+    # if status == -1:
+    #     print("get failed")
+    # else:
+    #     print("Get request: Success")
         
 if __name__ == "__main__":
     main()

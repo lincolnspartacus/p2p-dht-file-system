@@ -9,6 +9,8 @@ service ChordService {
     rpc checkPredecessor(Empty) returns (Empty) {}
     rpc checkAlive(Empty) returns (Empty) {}
 
+    rpc replicateFile(stream ReplicateRequest) returns (Empty) {}
+
     rpc getSuccessorList(Empty) returns (getSuccessorListResponse) {}
     rpc putFile(stream Chunk) returns (PutFileResponse) {}
     rpc getFile(GetFileRequest) returns (stream Chunk) {}
@@ -81,4 +83,11 @@ message GetFileRequest {
 
 message PutFileResponse {
   int32 length = 1;
+}
+
+message ReplicateRequest {
+    optional string publickey_filename = 1; // Public Key + Filename together
+    optional string fileid = 2; // Final SHA1
+    optional string checksum = 3; // Checksum of file (Unused for now)
+    bytes buffer = 4; // Chunk of data
 }

@@ -10,6 +10,7 @@ import chord_pb2
 from stabilize import Stabilize
 from fix_finger import FixFinger
 from concurrent import futures
+from chord_replicate import ReplicateThread
 import os
 
 class Node():
@@ -159,9 +160,13 @@ class Node():
         self.successor_lock.acquire()
 
         print("****SET SUCCESSOR***",id)
+        old_set = set(self.successor_list)
         self.successor = (id, ip_addr)
         self.ftable[0] = self.successor
         self.successor_list[0] = self.successor
+        new_set = set(self.successor_list)
+        if old_set != new_set:
+            self.onSuccessorListChanged(old_set, new_set)
 
         self.successor_lock.release()
 
@@ -230,6 +235,7 @@ class Node():
             new_list.insert(0, successor) # Prepend successor s
 
             print("[sync_successor_list] response received = " + str(new_list))
+            old_list = self.get_successor_list()
             self.set_successor_list(new_list)
 
         except Exception as e:
@@ -241,8 +247,31 @@ class Node():
             new_list = self.get_successor_list()
             new_list.pop(0)
             new_list.append((self.id, self.ip)) # Add ourself as a successor at the end. NOTE : Don't put -1 here
+            old_list = self.get_successor_list()
             self.set_successor_list(new_list)
         
+        old_list = set(old_list)
+        new_list = set(new_list)
+        if(set(old_list) != set(new_list)):
+            self.onSuccessorListChanged(old_list, new_list)
+
+    # Called whenever successorList is modified
+    def onSuccessorListChanged(self, old_list, new_list):
+        print("SUCCESSOR LIST CHANGED !")
+        set_difference = new_list.difference(old_list)
+        set_difference.discard((-1, 'null')) # Remove -1s
+        set_difference.discard((self.id, self.ip)) # Remove ourself from the difference set
+
+        print(f'DIFFERENCE = {set_difference}')
+        if len(set_difference) != 0:
+            # Transfer owner_list to all nodes in set_difference
+            self.owner_lock.acquire()
+            owner_dict = self.owner_dict.copy()
+            self.owner_lock.release()
+            for target in set_difference:
+                ReplicateThread(self, target, owner_dict).start()
+
+
     '''
     Search the Finger Table for the highest predecessor of k
     Returns node in (ID, IP Addr) format

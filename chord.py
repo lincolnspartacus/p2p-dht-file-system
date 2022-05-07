@@ -1,5 +1,6 @@
 import hashlib
 import grpc
+from requests import request
 import chord_pb2_grpc
 import chord_pb2
 import utils
@@ -168,3 +169,40 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             return chord_pb2.Chunk()
 
         return self.get_file_chunks(request.name, pbkey_bytes)
+
+    '''
+    Called by another node to replicate a file on this node
+    '''
+    def replicateFile(self, request_iterator, context):
+        publickey_filename = ''
+        fileid = ''
+        checksum = ''
+
+        for request in request_iterator:
+            print('Inside request iterator!')
+            publickey_filename = request.publickey_filename
+            fileid = request.fileid
+            checksum = request.checksum
+            break
+        
+        pbkey_str = publickey_filename[0:publickey_filename.find('_')]
+        filename = publickey_filename[publickey_filename.find('_') + 1:]
+
+        print('[chord] replicateFile RPC = ' + publickey_filename)
+
+        target_filename = os.path.join(self.node.storage_dir, pbkey_str)
+        if not os.path.exists(target_filename):
+            os.makedirs(target_filename) # Create Dir
+        target_filename = os.path.join(target_filename, filename)
+        with open(target_filename, 'wb') as f:
+            for request in request_iterator:
+                print(request.buffer)
+                f.write(request.buffer)
+        
+        # Add it to our replicated dict
+        self.node.replicated_lock.acquire()
+        self.node.replicated_dict[publickey_filename] = (fileid, checksum)
+        self.node.replicated_lock.release()
+
+        return chord_pb2.Empty()
+
