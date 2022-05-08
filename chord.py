@@ -178,7 +178,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), filename)
         with open(target_filename, 'rb') as f:
             while True:
-                piece = f.read()
+                piece = f.read(utils.chunk_size)
                 if len(piece) == 0:
                     return
                 yield chord_pb2.Chunk(buffer=piece)

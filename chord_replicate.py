@@ -3,6 +3,7 @@ import chord_pb2_grpc
 import chord_pb2
 import grpc
 import os
+import utils
 
 class ReplicateThread(Thread):
 
@@ -27,7 +28,7 @@ class ReplicateThread(Thread):
         with open(targetFileName, 'rb') as f:
             while True:
                 req = chord_pb2.ReplicateRequest()
-                piece = f.read()
+                piece = f.read(utils.chunk_size)
                 if len(piece) == 0:
                     return
                 req.buffer = piece

@@ -4,3 +4,5 @@ def circular_distance(start, end, M):
         distance += 2**M
     
     return distance
+
+chunk_size = 65536

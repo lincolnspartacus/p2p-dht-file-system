@@ -13,11 +13,11 @@ def main():
     # else:
     #     print("Put request: Success")
     
-    # status = client.put("abc.txt")
-    # if status == -1:
-    #     print("put failed")
-    # else:
-    #     print("Put request: Success")
+    status = client.put("abc.txt")
+    if status == -1:
+        print("put failed")
+    else:
+        print("Put request: Success")
     
     # Get call  will result on data on local_path
     status = client.get("abc.txt")

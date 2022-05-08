@@ -18,7 +18,7 @@ class ChordClient():
         self.ring_bits = 16 #Can get it from bootstrapper every time on get/put request
         self.bootstrapper_ip = 'localhost:40051'
         self.storage_path = storage_path
-        
+
         if key_path!="":
             self.key_path = key_path
         else:
@@ -46,7 +46,7 @@ class ChordClient():
 
         with open(os.path.join(self.storage_path,filename), 'rb') as f:
             while True:
-                piece = f.read()
+                piece = f.read(utils.chunk_size)
                 if len(piece) == 0:
                     return
                 print(piece)
@@ -145,7 +145,6 @@ class ChordClient():
         response = self.find_responsible_node(file_hash, req_node[1])
         print("[Chord Client] findSuccessor response",response)
        
-        # TODO : Fix for large files required, max messsage length not sufficient
         options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
         channel = grpc.insecure_channel(response.ip, options=options)
         stub = chord_pb2_grpc.ChordServiceStub(channel)
