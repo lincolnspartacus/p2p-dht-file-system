@@ -7,6 +7,8 @@ import utils
 from concurrent import futures
 import os
 from authentication import validate_signature
+from chord_replicate import ReplicateThread
+
 class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
 
     def __init__(self, node):
@@ -144,6 +146,17 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         self.node.owner_lock.release()
 
         print(f'[chord] Put : Owner List = {self.node.owner_dict}')
+
+        # Replicate this file to our successorList
+        file_dict = {}
+        file_dict[pbkey_bytes.hex() + '_' + file_name] = (file_hash, 0)
+        succ_list = set(self.node.get_successor_list())
+        succ_list.discard((-1, 'null'))
+        succ_list.discard((self.node.id, self.node.ip))
+        for target_node in succ_list:
+            #print('[PUT] Replicating = ' + str(node) + ' , ' + str(file_dict))
+            ReplicateThread(node = self.node, target = target_node, replication_dict = file_dict).start()
+
         target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), file_name)
         return chord_pb2.PutFileResponse(length=os.path.getsize(target_filename))
 

@@ -23,7 +23,7 @@ class Node():
 
         self.successor = (-1, 'null') # Successor (list?) in (ID, IP addr) format
         self.predecessor = (-1, 'null') # Predecessor in (ID, IP addr) format
-        self.successor_list_len = 4 #Max successor list length
+        self.successor_list_len = 2 #Max successor list length
         self.successor_list = [(-1,'null')] * self.successor_list_len
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)

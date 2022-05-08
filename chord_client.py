@@ -110,6 +110,7 @@ class ChordClient():
         try:
             response = stub.putFile(chunks_generator)
         except grpc.RpcError as e:
+            print(e)
             e.details()
             status_code = e.code()
             status_code.name
