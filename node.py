@@ -12,6 +12,7 @@ from fix_finger import FixFinger
 from concurrent import futures
 from chord_replicate import ReplicateThread
 import os
+import pickle as pkl
 
 class Node():
     def __init__(self, ring_bits):
@@ -51,6 +52,15 @@ class Node():
         self.storage_dir = str(self.id)+'/'
         if not os.path.isdir(self.storage_dir):
             os.mkdir(self.storage_dir)
+        
+        self.owner_filepath = os.path.join(self.storage_dir, '.owner')
+        self.replicated_filepath = os.path.join(self.storage_dir, '.replicated')
+        if os.path.exists(self.owner_filepath):
+            with open(self.owner_filepath, 'rb') as f:
+                self.owner_dict = pkl.load(f)
+        if os.path.exists(self.replicated_filepath):
+            with open(self.replicated_filepath, 'rb') as f:
+                self.replicated_dict = pkl.load(f)
 
 
     '''
@@ -184,6 +194,23 @@ class Node():
         ret = self.successor_list.copy()
         self.successor_lock.release()
         return ret
+
+    # Update owner_dict and write it to disk
+    def addToOwnerDict(self, publickey_filename, fileid, checksum):
+        self.owner_lock.acquire()
+        self.owner_dict[publickey_filename] = (fileid, checksum)
+        with open(self.owner_filepath, 'wb') as f:
+            pkl.dump(self.owner_dict, f)
+        self.owner_lock.release()
+
+    # Update replicated_dict and write it to disk
+    def addToReplicatedDict(self, publickey_filename, fileid, checksum):
+        self.replicated_lock.acquire()
+        self.replicated_dict[publickey_filename] = (fileid, checksum)
+        with open(self.replicated_filepath, 'wb') as f:
+            pkl.dump(self.replicated_dict, f)
+        self.replicated_lock.release()
+
     
     # used to contact successor and notify the existence of current node
     def notify_successor(self):

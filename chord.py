@@ -153,11 +153,10 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         self.save_chunks_to_file(request_iterator, file_name, pbkey_bytes)
 
         # Add this file to self.node.owner_dict
-        self.node.owner_lock.acquire()
         hashkey = pbkey_bytes + file_name.encode()
         file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.node.ring_bits)
-        self.node.owner_dict[pbkey_bytes.hex() + '_' + file_name] = (file_hash, 0)
-        self.node.owner_lock.release()
+        publickey_filename = pbkey_bytes.hex() + '_' + file_name
+        self.node.addToOwnerDict(publickey_filename, file_hash, 0)
 
         print(f'[chord] Put : Owner List = {self.node.owner_dict}')
 
@@ -232,15 +231,11 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         if which_dict == 'replicated':
             # Add it to our replicated dict
             print('[replicateFile] Adding to replicated dict = ' + publickey_filename)
-            self.node.replicated_lock.acquire()
-            self.node.replicated_dict[publickey_filename] = (fileid, checksum)
-            self.node.replicated_lock.release()
+            self.node.addToReplicatedDict(publickey_filename, fileid, checksum)
         elif which_dict == 'owner':
             # Add to our owner dict
             print('[replicateFile] Adding to owner dict = ' + publickey_filename)
-            self.node.owner_lock.acquire()
-            self.node.owner_dict[publickey_filename] = (fileid, checksum)
-            self.node.owner_lock.release()
+            self.node.addToOwnerDict(publickey_filename, fileid, checksum)
 
 
         return chord_pb2.Empty()
