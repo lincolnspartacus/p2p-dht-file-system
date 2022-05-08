@@ -209,7 +209,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         for request in request_iterator:
             print('Inside request iterator!')
             publickey_filename = request.publickey_filename
-            fileid = request.fileid
+            fileid = int(request.fileid)
             checksum = request.checksum
             which_dict = request.which_dict
             break
