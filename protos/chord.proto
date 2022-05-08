@@ -89,5 +89,6 @@ message ReplicateRequest {
     optional string publickey_filename = 1; // Public Key + Filename together
     optional string fileid = 2; // Final SHA1
     optional string checksum = 3; // Checksum of file (Unused for now)
-    bytes buffer = 4; // Chunk of data
+    optional string which_dict = 4; // Owner_dict or Replicated_dict?
+    bytes buffer = 5; // Chunk of data
 }

@@ -59,22 +59,36 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         print("[notify_at_join] node {} received notify to set predecessor to {}".format(self.node.id, request.predecessorId))
         successor = self.node.get_successor()
         predecessor = self.node.get_predecessor()
+        x_id, x_ip = request.predecessorId, request.addr # x is n'
+
+        # Find keys in owner_dict that must be transferred to predecessor
+        transfer_dict = {}
+        x_n_distance = utils.circular_distance(x_id, self.node.id, self.node.ring_bits)
+        self.node.owner_lock.acquire()
+        for publickey_filename in self.node.owner_dict:
+            fileid, checksum = self.node.owner_dict[publickey_filename]
+            x_file_distance = utils.circular_distance(x_id, fileid, self.node.ring_bits)
+            if not(x_file_distance <= x_n_distance and x_file_distance > 0):
+                transfer_dict[publickey_filename] = (fileid, checksum)
+        self.node.owner_lock.release()
 
         if predecessor[0] == -1:
-            self.node.set_predecessor(request.predecessorId, request.addr)
+            self.node.set_predecessor(x_id, x_ip)
+            ReplicateThread(node = self.node, target = (x_id, x_ip),
+                            replication_dict = transfer_dict, which_dict = 'owner').start()
         else:
-            x_id, x_ip = request.predecessorId, request.addr # x is n'
             pred_x_distance = utils.circular_distance(predecessor[0], x_id, self.node.ring_bits)
             pred_n_distance = utils.circular_distance(predecessor[0], self.node.id, self.node.ring_bits)
 
             # If n' belongs to (pred, n) then set n.pred = n'
             if pred_x_distance < pred_n_distance and pred_x_distance != 0:
                 self.node.set_predecessor(x_id, x_ip)
+                ReplicateThread(node = self.node, target = (x_id, x_ip),
+                                replication_dict = transfer_dict, which_dict = 'owner').start()
                 # Set n.succ = n' to break self loop (happens when 2nd node joins chord)
                 if successor[0] == self.node.id:
                     self.node.set_successor(x_id, x_ip)
 
-        # TODO: Transfer of keys on join. refer 
         return chord_pb2.NotifyResponse(result=0)
 
     def checkPredecessor(self, request, context):
@@ -155,7 +169,8 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         succ_list.discard((self.node.id, self.node.ip))
         for target_node in succ_list:
             #print('[PUT] Replicating = ' + str(node) + ' , ' + str(file_dict))
-            ReplicateThread(node = self.node, target = target_node, replication_dict = file_dict).start()
+            ReplicateThread(node = self.node, target = target_node,
+                            replication_dict = file_dict,  which_dict = 'replicated').start()
 
         target_filename = os.path.join(self.node.storage_dir, pbkey_bytes.hex(), file_name)
         return chord_pb2.PutFileResponse(length=os.path.getsize(target_filename))
@@ -190,12 +205,14 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         publickey_filename = ''
         fileid = ''
         checksum = ''
+        which_dict = ''
 
         for request in request_iterator:
             print('Inside request iterator!')
             publickey_filename = request.publickey_filename
             fileid = request.fileid
             checksum = request.checksum
+            which_dict = request.which_dict
             break
         
         pbkey_str = publickey_filename[0:publickey_filename.find('_')]
@@ -212,10 +229,19 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                 print(request.buffer)
                 f.write(request.buffer)
         
-        # Add it to our replicated dict
-        self.node.replicated_lock.acquire()
-        self.node.replicated_dict[publickey_filename] = (fileid, checksum)
-        self.node.replicated_lock.release()
+        if which_dict == 'replicated':
+            # Add it to our replicated dict
+            print('[replicateFile] Adding to replicated dict = ' + publickey_filename)
+            self.node.replicated_lock.acquire()
+            self.node.replicated_dict[publickey_filename] = (fileid, checksum)
+            self.node.replicated_lock.release()
+        elif which_dict == 'owner':
+            # Add to our owner dict
+            print('[replicateFile] Adding to owner dict = ' + publickey_filename)
+            self.node.owner_lock.acquire()
+            self.node.owner_dict[publickey_filename] = (fileid, checksum)
+            self.node.owner_lock.release()
+
 
         return chord_pb2.Empty()
 

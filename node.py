@@ -269,7 +269,7 @@ class Node():
             owner_dict = self.owner_dict.copy()
             self.owner_lock.release()
             for target in set_difference:
-                ReplicateThread(self, target, owner_dict).start()
+                ReplicateThread(self, target, owner_dict, 'replicated').start()
 
 
     '''

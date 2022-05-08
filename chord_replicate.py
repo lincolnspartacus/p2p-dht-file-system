@@ -6,11 +6,12 @@ import os
 
 class ReplicateThread(Thread):
 
-    def __init__(self, node, target, replication_dict):
+    def __init__(self, node, target, replication_dict, which_dict):
         Thread.__init__(self)
         self.node = node # Our own node object
         self.target = target # Target node for replication (id, ip)
         self.replication_dict = replication_dict # Files to be replicated
+        self.which_dict = which_dict
     
     def getChunks(self, publickey_filename, fileid, checksum):
         targetFileName = publickey_filename.replace('_', '/', 1)
@@ -20,6 +21,7 @@ class ReplicateThread(Thread):
         req.publickey_filename = publickey_filename
         req.fileid = str(fileid)
         req.checksum = str(checksum)
+        req.which_dict = self.which_dict
         yield req
 
         with open(targetFileName, 'rb') as f:
