@@ -28,7 +28,7 @@ class Node():
         self.successor_list = [(-1,'null')] * self.successor_list_len
         
         # Finger Table of size `ring_bits` in (ID, IP addr format)
-        self.ftable = [(-1, 'null')] * ring_bits
+        self.ftable = [(self.id, self.ip)] * ring_bits
 
         #Utility threads
         self.stabilize = Stabilize(self)
@@ -101,6 +101,15 @@ class Node():
     Request is routed and the chord ring is traversed starting from target_ip 
     '''
     def find_successor(self, target_id, target_ip):
+        successor = self.get_successor()
+        if successor[0] == -1 or successor[0] == self.id:
+            return successor
+        n_succ_distance = utils.circular_distance(self.id, successor[0], self.ring_bits)
+        n_target_distance = utils.circular_distance(self.id, target_id, self.ring_bits)
+
+        if n_target_distance <= n_succ_distance:
+            return successor
+
         try:
             # successor = n'.find successor(n)
             is_final = False
@@ -109,12 +118,10 @@ class Node():
                 stub = chord_pb2_grpc.ChordServiceStub(channel)
                 request = chord_pb2.FindSuccessorRequest(id = target_id)
                 response = stub.findSuccessor(request)
-                if response.ip == target_ip: #Break the loop
-                    is_final = True
-                else: 
-                    is_final = response.is_final
                 target_ip = response.ip
-            return (target_id, target_ip)
+                is_final = response.is_final
+
+            return (response.id, response.ip)
         except:
             print('[find_successor] {}: Failed target_id {} target_ip {}'.format(self.id, target_id, target_ip))
             return (-1, 'null')
@@ -371,7 +378,7 @@ def main():
     #node.contactBootstrapper()
     node.join()
     node.stabilize.start()
-    # node.fix_finger.start()
+    node.fix_finger.start()
     node.serve()
 
 if __name__ == "__main__":

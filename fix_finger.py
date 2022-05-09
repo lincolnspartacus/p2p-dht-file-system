@@ -18,6 +18,8 @@ class FixFinger(Thread):
 
     def run(self):
 
+        time.sleep(30) # Wait for for successor to get set properly
+
         while True:
             low = 3
             high = 6
@@ -25,6 +27,8 @@ class FixFinger(Thread):
             time.sleep(sleep_time)
 
             self.next_finger = (self.next_finger + 1) % self.node.ring_bits
+            if self.next_finger == 0: # Skip finger_table[0] because it is set elsewhere by Chord
+                continue
             (id, ip) = self.node.ftable[self.next_finger]
             print('[fix_finger] {}: CurrentID {} CurrentNodeIP {}'.format(self.node.id, id, ip))
             id = self.node.id + pow(2, self.next_finger) 
