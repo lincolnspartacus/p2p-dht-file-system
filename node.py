@@ -124,7 +124,7 @@ class Node():
             return (response.id, response.ip)
         except:
             print('[find_successor] {}: Failed target_id {} target_ip {}'.format(self.id, target_id, target_ip))
-            return (-1, 'null')
+            return (self.id, self.ip)
        
     '''
     Join the existing chord ring OR become the first node

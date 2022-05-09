@@ -16,8 +16,11 @@ class FixFinger(Thread):
         self.ring_modulo = pow(2, self.node.ring_bits)
 
     def run(self):
-
-        time.sleep(30) # Wait for for successor to get set properly
+        # Wait for for successor to get set properly
+        while True:
+            successor = self.node.get_successor()
+            if successor[0] != -1 and successor[0] != self.node.id:
+                break
 
         while True:
             low = 3
