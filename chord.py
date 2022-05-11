@@ -197,6 +197,14 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             print("[chord] Get request failed")
             return chord_pb2.Chunk()
 
+        publickey_filename = pbkey_bytes.hex() + '_' + file_name
+        if not(publickey_filename in self.node.owner_dict or publickey_filename in self.node.replicated_dict):
+            context.set_code(grpc.StatusCode.NOT_FOUND)
+            context.set_details('Key not in owner or replicated list!')
+            print("[chord] Get request failed")
+            return chord_pb2.Chunk()
+
+
         return self.get_file_chunks(request.name, pbkey_bytes)
 
     '''

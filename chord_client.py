@@ -138,9 +138,13 @@ class ChordClient():
         return 0
 
     def get(self, filename):
-        while self.getHelper(filename) == -1:
+        status_code = 0
+        while True:
+            status_code = self.getHelper(filename)
+            if status_code != -1:
+                break
             print('get() failed, retrying again ...')
-        return 0
+        return status_code
 
     def getHelper(self, filename):
         '''
@@ -185,11 +189,19 @@ class ChordClient():
             target_file_name = os.path.join(self.storage_path,filename)
             self.save_chunks_to_file(response, target_file_name)
         except grpc.RpcError as e:
-            print('Responsible Node crashed!')
             e.details()
             status_code = e.code()
             status_code.name
             status_code.value
+
+            if status_code == grpc.StatusCode.PERMISSION_DENIED:
+                print('Permission denied!')
+                return grpc.StatusCode.PERMISSION_DENIED
+            elif status_code == grpc.StatusCode.NOT_FOUND:
+                print('File not found on server!')
+                return grpc.StatusCode.NOT_FOUND
+            else:
+                print('Responsible Node crashed!')
             return -1
 
         return 0
