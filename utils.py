@@ -8,7 +8,7 @@ def circular_distance(start, end, M):
     
     return distance
 
-def atomic_pkl_dump(filename, python_obj):
+def atomic_pkl_dump(python_obj, filename):
     tmpfile = filename + "2"
     with open(tmpfile, 'wb') as f:
         pkl.dump(python_obj, f)
