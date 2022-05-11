@@ -136,7 +136,6 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             os.fsync(f.fileno()) 
 
     def putFile(self, request_iterator, context):
-        print("[chord] File upload")
         info = ''
         file_name = None
         for chunk in request_iterator:
@@ -154,6 +153,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                 return chord_pb2.PutFileResponse()
             break
 
+        print("[chord] File upload = " + file_name)
         self.save_chunks_to_file(request_iterator, file_name, pbkey_bytes)
 
         # Add this file to self.node.owner_dict

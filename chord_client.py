@@ -79,9 +79,13 @@ class ChordClient():
         return response
 
     def put(self, filename):
-        while self.putHelper(filename) == -1:
+        status_code = 0
+        while True:
+            status_code = self.putHelper(filename)
+            if status_code != -1:
+                break
             print('put() failed, retrying again ...')
-        return 0
+        return status_code
             
 
 
@@ -127,11 +131,17 @@ class ChordClient():
         try:
             response = stub.putFile(chunks_generator)
         except grpc.RpcError as e:
-            print('Responsible Node crashed!')
+            print(e)
             e.details()
             status_code = e.code()
             status_code.name
             status_code.value
+
+            if status_code == grpc.StatusCode.PERMISSION_DENIED:
+                print('Permission denied!')
+                return grpc.StatusCode.PERMISSION_DENIED
+            else:
+                print('Responsible Node crashed!')
             return -1
         #Enable assertion?
         #assert response.length == os.path.getsize(in_file_name)
