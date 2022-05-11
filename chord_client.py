@@ -9,6 +9,7 @@ import chord_pb2_grpc
 import chord_pb2
 import os
 from authentication import Auth
+import time
 
 CHUNK_SIZE = 1024 * 1024  # 1MB
 class ChordClient():
@@ -18,6 +19,7 @@ class ChordClient():
         self.ring_bits = 16 #Can get it from bootstrapper every time on get/put request
         self.bootstrapper_ip = 'localhost:40051'
         self.storage_path = storage_path
+        self.ring_entry = self.contactBootstrapper()
 
         if key_path!="":
             self.key_path = key_path
@@ -77,6 +79,13 @@ class ChordClient():
         return response
 
     def put(self, filename):
+        while self.putHelper(filename) == -1:
+            print('put() failed, retrying again ...')
+        return 0
+            
+
+
+    def putHelper(self, filename):
         '''
         Returns 0 on success, -1 on failure
         Compute hash value for filename
@@ -86,10 +95,9 @@ class ChordClient():
         TODO: If node crashes in the middle, start again
         TODO: If key doesnt exist, have different failure in RPC call
         '''
-        req_node = self.contactBootstrapper()
-        
-        if req_node[0] == -1:
-            return -1
+
+        while self.ring_entry[0] == -1:
+            self.ring_entry = self.contactBootstrapper()
 
         signature = self.auth.sign_message(filename.encode())
         pbkey_bytes = self.auth.get_publickey()
@@ -99,8 +107,15 @@ class ChordClient():
         file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.ring_bits)
         print("[Chord Client] File Hash",file_hash)
 
-        response = self.find_responsible_node(file_hash, req_node[1])
-        print("[Chord Client] findSuccessor response",response)
+        while True:
+            try:
+                response = self.find_responsible_node(file_hash, self.ring_entry[1])
+                print(f"[Chord Client] findSuccessor response = [{response.id}] {response.ip}")
+                break
+            except grpc.RpcError as e:
+                time.sleep(0.3)
+                self.ring_entry = self.contactBootstrapper() # Retry with new entry node
+
 
         options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
         channel = grpc.insecure_channel(response.ip,options =options)
@@ -112,7 +127,7 @@ class ChordClient():
         try:
             response = stub.putFile(chunks_generator)
         except grpc.RpcError as e:
-            print(e)
+            print('Responsible Node crashed!')
             e.details()
             status_code = e.code()
             status_code.name
@@ -123,6 +138,11 @@ class ChordClient():
         return 0
 
     def get(self, filename):
+        while self.getHelper(filename) == -1:
+            print('get() failed, retrying again ...')
+        return 0
+
+    def getHelper(self, filename):
         '''
         Returns 0 on success, -1 on failure
         Compute hash value for filename
@@ -132,10 +152,9 @@ class ChordClient():
         TODO : If node crashes in the middle, start again
         TODO : If key doesnt exist, have different failure in RPC call
         '''
-        req_node = self.contactBootstrapper()
-        
-        if req_node[0] == -1:
-            return -1
+
+        while self.ring_entry[0] == -1:
+            self.ring_entry = self.contactBootstrapper()
 
         signature = self.auth.sign_message(filename.encode())
         pbkey_bytes = self.auth.get_publickey()
@@ -144,8 +163,15 @@ class ChordClient():
 
         file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.ring_bits)
         print("[Chord Client] File Hash",file_hash)
-        response = self.find_responsible_node(file_hash, req_node[1])
-        print("[Chord Client] findSuccessor response",response)
+
+        while True:
+            try:
+                response = self.find_responsible_node(file_hash, self.ring_entry[1])
+                print(f"[Chord Client] findSuccessor response = [{response.id}] {response.ip}")
+                break
+            except grpc.RpcError as e:
+                time.sleep(0.3)
+                self.ring_entry = self.contactBootstrapper() # Retry with new entry node
        
         options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
         channel = grpc.insecure_channel(response.ip, options=options)
@@ -156,14 +182,14 @@ class ChordClient():
 
         try:
             response = stub.getFile(chord_pb2.GetFileRequest(name=filename,signature=signature,publickey=pbkey_bytes))
+            target_file_name = os.path.join(self.storage_path,filename)
+            self.save_chunks_to_file(response, target_file_name)
         except grpc.RpcError as e:
+            print('Responsible Node crashed!')
             e.details()
             status_code = e.code()
             status_code.name
             status_code.value
             return -1
-
-        target_file_name = os.path.join(self.storage_path,filename)
-        self.save_chunks_to_file(response, target_file_name)
 
         return 0
