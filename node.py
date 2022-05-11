@@ -206,8 +206,7 @@ class Node():
     def addToOwnerDict(self, publickey_filename, fileid, checksum):
         self.owner_lock.acquire()
         self.owner_dict[publickey_filename] = (fileid, checksum)
-        with open(self.owner_filepath, 'wb') as f:
-            pkl.dump(self.owner_dict, f)
+        utils.atomic_pkl_dump(self.owner_dict, self.owner_filepath)
         self.owner_lock.release()
     
     def removeFromOwnerDict(self, delete_dict):
@@ -217,16 +216,14 @@ class Node():
                 self.owner_dict.pop(publickey_filename)
             except:
                 pass
-        with open(self.owner_filepath, 'wb') as f:
-            pkl.dump(self.owner_dict, f)
+        utils.atomic_pkl_dump(self.owner_dict, self.owner_filepath)
         self.owner_lock.release()
 
     # Update replicated_dict and write it to disk
     def addToReplicatedDict(self, publickey_filename, fileid, checksum):
         self.replicated_lock.acquire()
         self.replicated_dict[publickey_filename] = (fileid, checksum)
-        with open(self.replicated_filepath, 'wb') as f:
-            pkl.dump(self.replicated_dict, f)
+        utils.atomic_pkl_dump(self.replicated_dict, self.replicated_filepath)
         self.replicated_lock.release()
 
     
