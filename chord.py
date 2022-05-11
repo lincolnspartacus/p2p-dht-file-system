@@ -76,6 +76,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             self.node.set_predecessor(x_id, x_ip)
             ReplicateThread(node = self.node, target = (x_id, x_ip),
                             replication_dict = transfer_dict, which_dict = 'owner').start()
+            self.node.removeFromOwnerDict(transfer_dict) # Delete keys from our owner dict
         else:
             pred_x_distance = utils.circular_distance(predecessor[0], x_id, self.node.ring_bits)
             pred_n_distance = utils.circular_distance(predecessor[0], self.node.id, self.node.ring_bits)
@@ -85,6 +86,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
                 self.node.set_predecessor(x_id, x_ip)
                 ReplicateThread(node = self.node, target = (x_id, x_ip),
                                 replication_dict = transfer_dict, which_dict = 'owner').start()
+                self.node.removeFromOwnerDict(transfer_dict) # Delete keys from our owner dict
                 # Set n.succ = n' to break self loop (happens when 2nd node joins chord)
                 if successor[0] == self.node.id:
                     self.node.set_successor(x_id, x_ip)
