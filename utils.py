@@ -17,4 +17,5 @@ def atomic_pkl_dump(python_obj, filename):
     
     os.rename(tmpfile, filename)
 
-chunk_size = 65536
+chunk_size = 64 * 1024 * 1024 # 64 MB
+max_message_length = 256 * 1024 * 1024 # 256 MB

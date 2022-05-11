@@ -130,7 +130,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         target_filename = os.path.join(target_filename, filename)
         with open(target_filename, 'wb') as f:
             for chunk in chunks:
-                print(chunk.buffer)
+                #print(chunk.buffer)
                 f.write(chunk.buffer)
             f.flush()
             os.fsync(f.fileno()) 
@@ -237,7 +237,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         target_filename = os.path.join(target_filename, filename)
         with open(target_filename, 'wb') as f:
             for request in request_iterator:
-                print(request.buffer)
+                #print(request.buffer)
                 f.write(request.buffer)
             f.flush()
             os.fsync(f.fileno()) 

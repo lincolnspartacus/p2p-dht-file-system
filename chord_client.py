@@ -53,14 +53,14 @@ class ChordClient():
                 piece = f.read(utils.chunk_size)
                 if len(piece) == 0:
                     return
-                print(piece)
+                #print(piece)
                 yield chord_pb2.Chunk(buffer=piece)
 
     def save_chunks_to_file(self, chunks, filename):
         f = open(filename, 'wb')
         
         for chunk in chunks:
-            print(chunk.buffer)
+            #print(chunk.buffer)
             f.write(chunk.buffer)
 
         f.close()
@@ -117,7 +117,7 @@ class ChordClient():
                 self.ring_entry = self.contactBootstrapper() # Retry with new entry node
 
 
-        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+        options = [('grpc.max_message_length', utils.max_message_length),('grpc.max_send_message_length', utils.max_message_length), ('grpc.max_receive_message_length', utils.max_message_length)]
         channel = grpc.insecure_channel(response.ip,options =options)
         # TODO : Try/except logic on communication with nodes
         stub = chord_pb2_grpc.ChordServiceStub(channel)
@@ -177,7 +177,7 @@ class ChordClient():
                 time.sleep(0.3)
                 self.ring_entry = self.contactBootstrapper() # Retry with new entry node
        
-        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+        options = [('grpc.max_message_length', utils.max_message_length),('grpc.max_send_message_length', utils.max_message_length), ('grpc.max_receive_message_length', utils.max_message_length)]
         channel = grpc.insecure_channel(response.ip, options=options)
         stub = chord_pb2_grpc.ChordServiceStub(channel)
         

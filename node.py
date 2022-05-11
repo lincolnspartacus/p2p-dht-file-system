@@ -352,7 +352,7 @@ class Node():
 
     def serve(self):
         ip = '0.0.0.0:' + sys.argv[1]
-        options = [('grpc.max_message_length', 100 * 1024 * 1024),('grpc.max_send_message_length', 512 * 1024 * 1024), ('grpc.max_receive_message_length', 512 * 1024 * 1024)]
+        options = [('grpc.max_message_length', utils.max_message_length),('grpc.max_send_message_length', utils.max_message_length), ('grpc.max_receive_message_length', utils.max_message_length)]
 
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10),options=options)
         chord_pb2_grpc.add_ChordServiceServicer_to_server(
