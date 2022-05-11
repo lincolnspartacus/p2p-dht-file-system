@@ -30,7 +30,7 @@ class FixFinger(Thread):
 
             for next_finger in range(1, self.node.ring_bits): # Skip finger_table[0] because it is set elsewhere by Chord
                 (id, ip) = self.node.ftable[next_finger]
-                print('[fix_finger] {}: CurrentID {} CurrentNodeIP {}'.format(self.node.id, id, ip))
+                #print('[fix_finger] {}: CurrentID {} CurrentNodeIP {}'.format(self.node.id, id, ip))
                 id = self.node.id + pow(2, next_finger)
                 id = id % self.ring_modulo
 
@@ -39,6 +39,6 @@ class FixFinger(Thread):
                 #print('[fix_finger] {}: Target CurrentID {} CurrentNodeIP {}'.format(self.node.id, id, target_ip))
                 (id, ip) = self.node.find_successor(id, target_ip)
                 self.node.ftable[next_finger] = (id, ip)
-                print('[fix_finger] {}: UpdatedID {} UpdatedNodeIP {}'.format(self.node.id, id, ip))
+                #print('[fix_finger] {}: UpdatedID {} UpdatedNodeIP {}'.format(self.node.id, id, ip))
             
             print(self.node.ftable)

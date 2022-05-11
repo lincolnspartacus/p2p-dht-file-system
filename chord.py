@@ -29,7 +29,7 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             response.ip = successor[1]
             response.id = successor[0]
             response.is_final = True
-            print("[chord] findSuccessor response")
+            #print("[chord] findSuccessor response")
 
             return response
 
@@ -38,9 +38,9 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             response.is_final = True
         else:
             response.is_final = False
-        print("[chord] response id ",response.id)
-        print("[chord] response addr ",response.ip)
-        print("[chord] response is_final ",response.is_final)
+        # print("[chord] response id ",response.id)
+        # print("[chord] response addr ",response.ip)
+        # print("[chord] response is_final ",response.is_final)
 
         return response
 
