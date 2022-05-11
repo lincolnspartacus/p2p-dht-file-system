@@ -132,6 +132,8 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             for chunk in chunks:
                 print(chunk.buffer)
                 f.write(chunk.buffer)
+            f.flush()
+            os.fsync(f.fileno()) 
 
     def putFile(self, request_iterator, context):
         print("[chord] File upload")
@@ -237,6 +239,8 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
             for request in request_iterator:
                 print(request.buffer)
                 f.write(request.buffer)
+            f.flush()
+            os.fsync(f.fileno()) 
         
         if which_dict == 'replicated':
             # Add it to our replicated dict
