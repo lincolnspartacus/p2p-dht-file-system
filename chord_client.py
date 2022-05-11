@@ -40,11 +40,13 @@ class ChordClient():
     def get_file_chunks(self, filename, signature, pbkey_bytes):
         print("[chord_client] get_file_chunks")
         
+        absolute_path = filename
+        filename = os.path.basename(absolute_path)
         #signature+publickey+filename:91+64bytes+filename
         key=signature+pbkey_bytes+filename.encode()
         yield chord_pb2.Chunk(buffer=key)
 
-        with open(os.path.join(self.storage_path,filename), 'rb') as f:
+        with open(absolute_path, 'rb') as f:
             while True:
                 piece = f.read(utils.chunk_size)
                 if len(piece) == 0:
