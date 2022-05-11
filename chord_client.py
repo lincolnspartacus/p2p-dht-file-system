@@ -102,8 +102,11 @@ class ChordClient():
 
         while self.ring_entry[0] == -1:
             self.ring_entry = self.contactBootstrapper()
+     
+        signature = self.auth.sign_message(filename.split("/")[-1].encode())
+        
+        #signature = self.auth.sign_message(filename.encode())
 
-        signature = self.auth.sign_message(filename.encode())
         pbkey_bytes = self.auth.get_publickey()
         # Concat publickey,filename for hashing
         hashkey = pbkey_bytes+filename.encode()
@@ -170,7 +173,7 @@ class ChordClient():
         while self.ring_entry[0] == -1:
             self.ring_entry = self.contactBootstrapper()
 
-        signature = self.auth.sign_message(filename.encode())
+        signature = self.auth.sign_message(filename.split("/")[-1].encode())
         pbkey_bytes = self.auth.get_publickey()
         # Concat (publickey,filename) for hashing
         hashkey = pbkey_bytes+filename.encode()
