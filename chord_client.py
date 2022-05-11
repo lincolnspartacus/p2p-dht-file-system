@@ -196,9 +196,11 @@ class ChordClient():
 
             if status_code == grpc.StatusCode.PERMISSION_DENIED:
                 print('Permission denied!')
+                os.unlink(target_file_name)
                 return grpc.StatusCode.PERMISSION_DENIED
             elif status_code == grpc.StatusCode.NOT_FOUND:
                 print('File not found on server!')
+                os.unlink(target_file_name)
                 return grpc.StatusCode.NOT_FOUND
             else:
                 print('Responsible Node crashed!')
