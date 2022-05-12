@@ -109,7 +109,7 @@ class ChordClient():
 
         pbkey_bytes = self.auth.get_publickey()
         # Concat publickey,filename for hashing
-        hashkey = pbkey_bytes+filename.encode()
+        hashkey = pbkey_bytes+filename.split("/")[-1].encode()
 
         file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.ring_bits)
         print("[Chord Client] File Hash",file_hash)
@@ -176,7 +176,7 @@ class ChordClient():
         signature = self.auth.sign_message(filename.split("/")[-1].encode())
         pbkey_bytes = self.auth.get_publickey()
         # Concat (publickey,filename) for hashing
-        hashkey = pbkey_bytes+filename.encode()
+        hashkey = pbkey_bytes+filename.split("/")[-1].encode()
 
         file_hash = int(hashlib.sha1(hashkey).hexdigest(), 16) % (2**self.ring_bits)
         print("[Chord Client] File Hash",file_hash)
