@@ -114,6 +114,9 @@ class ChordServicer(chord_pb2_grpc.ChordServiceServicer):
         ftable_nodeinfo = [chord_pb2.NodeInfo(id = x[0], ip = x[1]) for x in self.node.ftable]
         response = chord_pb2.DebugInfo(predecessor = pred, successor = succ, self_node = self_node)
         response.ftable.extend(ftable_nodeinfo)
+
+        response.ownerList = str(self.node.owner_dict)
+        response.replicatedList = str(self.node.replicated_dict)
         return response
 
     def getSuccessorList(self, request, context):

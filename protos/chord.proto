@@ -46,7 +46,9 @@ message DebugInfo {
     NodeInfo predecessor = 1;
     NodeInfo successor = 2;
     NodeInfo self_node = 3;
-    repeated NodeInfo ftable = 4;
+    string ownerList = 4;
+    string replicatedList = 5;
+    repeated NodeInfo ftable = 6;
 }
 
 message getSuccessorListResponse{
