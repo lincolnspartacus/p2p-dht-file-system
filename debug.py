@@ -23,7 +23,7 @@ def printDetails(ip):
 
 def main():
     print("Trying to reach the chord server..")
-    nodes = ['0.0.0.0:50050', '0.0.0.0:50055', '0.0.0.0:50056', '0.0.0.0:50057']
+    nodes = ['0.0.0.0:50057', '0.0.0.0:50056', '0.0.0.0:50050', '0.0.0.0:50055']
 
     for node in nodes:
         try:
