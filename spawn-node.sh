@@ -7,7 +7,7 @@ i=0
 j=50000
 while [ $i -lt $MAXNODES ]
 do
-  python chord_node.py $j &
+  python node.py $j &
   sleep $LAT
   i=$[$i+1]
   j=$[$j+1]
